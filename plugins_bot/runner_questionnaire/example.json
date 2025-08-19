@@ -1,0 +1,1 @@
+[{"var": "name", "question": "Как вас зовут?", "answer": {"type": "string"}}, {"var": "age", "question": "Сколько лет?", "answer": {"type": "int"}}, {"var": "city", "question": "Где живете?", "answer": {"type": "list", "list_answer": ["Moscow", "Kazan", "Chelny"]}}]
