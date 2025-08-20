@@ -11,9 +11,9 @@ import traceback
 from cfg.config_tlg import TYPE_DB
 
 if TYPE_DB == 'CSV':
-    from tlgbotcore.sqliteutils import User
+    from bot.tlgbotcore.sqliteutils import User
 elif TYPE_DB == 'SQLITE':
-    from tlgbotcore.sqliteutils import User
+    from bot.tlgbotcore.sqliteutils import User
 
 DELETE_TIMEOUT = 2
 

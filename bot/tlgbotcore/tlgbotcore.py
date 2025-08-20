@@ -25,7 +25,7 @@ class TlgBotCore(TelegramClient):
 
         # настройки пользователей бота в том числе и администратора admin_client
         if type_db == 'SQLITE':
-            from tlgbotcore.sqliteutils import SettingUser, User, Role
+            from  bot.tlgbotcore.sqliteutils import SettingUser, User, Role
             name_file_settings = 'settings.db'
             if not os.path.exists(name_file_settings):
                 self._logger.info('Нет файла БД настроек')
@@ -42,7 +42,7 @@ class TlgBotCore(TelegramClient):
             self.settings = settings
         elif type_db == 'CSV':
             name_file_settings = 'settings_db'
-            from tlgbotcore.csvdbutils import SettingUser, User, Role
+            from bot.tlgbotcore.csvdbutils import SettingUser, User, Role
             self._logger.info(f"БД типа CSV")
             if not os.path.exists(name_file_settings):
                 self._logger.info('Нет файла БД настроек')
