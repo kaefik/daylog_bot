@@ -4,8 +4,13 @@
 """
 
 import time
+import os
+import sys
 from datetime import date, timedelta
-from database import DatabaseManager
+# Add the project root to Python path
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from core.database.manager import DatabaseManager
 
 def test_performance():
     """Тест производительности операций с БД"""

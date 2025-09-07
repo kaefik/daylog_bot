@@ -296,6 +296,25 @@ class DatabaseManager:
         except sqlite3.Error as e:
             logger.error(f"Ошибка обновления записи {entry_date}: {e}")
             return False
+
+    def get_entries_by_period(self, user_id: int, start_date: date, end_date: date) -> List[Dict]:
+        """Получение записей дневника за определенный период"""
+        try:
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+                
+                cursor.execute('''
+                    SELECT * FROM diary_entries 
+                    WHERE user_id = ? AND entry_date BETWEEN ? AND ?
+                    ORDER BY entry_date DESC
+                ''', (user_id, start_date, end_date))
+                
+                rows = cursor.fetchall()
+                return [dict(row) for row in rows]
+                
+        except sqlite3.Error as e:
+            logger.error(f"Ошибка получения записей за период {start_date}-{end_date}: {e}")
+            return []
     
     def delete_diary_entry(self, user_id: int, entry_date: date) -> bool:
         pass
