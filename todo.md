@@ -64,18 +64,46 @@ sqlite3.register_converter("date", convert_date)
 sqlite3.register_converter("datetime", convert_datetime)
 ```
 
+### 5. Добавление недостающего метода get_entries_by_period
+**Проблема**: `AttributeError: 'DatabaseManager' object has no attribute 'get_entries_by_period'`
+- **Файл**: `core/database/manager.py`
+- **Решение**: Добавил метод `get_entries_by_period` для получения записей за определенный период
+
+```python
+def get_entries_by_period(self, user_id: int, start_date: date, end_date: date) -> List[Dict]:
+    """Получение записей дневника за определенный период"""
+    try:
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                SELECT * FROM diary_entries 
+                WHERE user_id = ? AND entry_date BETWEEN ? AND ?
+                ORDER BY entry_date DESC
+            ''', (user_id, start_date, end_date))
+            
+            rows = cursor.fetchall()
+            return [dict(row) for row in rows]
+            
+    except sqlite3.Error as e:
+        logger.error(f"Ошибка получения записей за период {start_date}-{end_date}: {e}")
+        return []
+```
+
 ## Результат
 - ✅ Все 3 теста проходят успешно
 - ✅ Нет ошибок импорта
 - ✅ Нет предупреждений о deprecated функциях
 - ✅ Тесты можно запускать командой `uv run tests/test_database.py`
+- ✅ Performance тест работает корректно
 
 ## Структура тестов
 Тесты покрывают следующие функции:
 1. `test_create_user` - создание пользователя
 2. `test_diary_entry_crud` - CRUD операции с записями дневника
 3. `test_unique_constraint` - проверка уникальности записей на дату
+4. `performance_test.py` - тест производительности (365 записей, поиск, получение за период)
 
 ## Файлы изменены
 - `tests/test_database.py` - исправлен импорт
-- `core/database/manager.py` - исправлены отступы, логика обновления и добавлены SQLite адаптеры
+- `core/database/manager.py` - исправлены отступы, логика обновления, добавлены SQLite адаптеры и метод get_entries_by_period
