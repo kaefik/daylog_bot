@@ -87,5 +87,11 @@
     "type_float": "число с плавающей точкой",
     "type_list": "список ответов",
     "db_diary_initialized": "База данных дневника создана.",
-    "db_diary_exists": "База данных дневника уже существует."
+    "db_diary_exists": "База данных дневника уже существует.",
+    "diary_user_required": "Вы не зарегистрированы в дневнике. Пожалуйста, сначала выполните команду /start.",
+    "today_entry_exists": "Запись за сегодня уже существует.",
+    "today_entry_created": "Создана новая запись за сегодня.",
+    "today_entry_error": "Ошибка при создании записи.",
+    "db_manager_import_error": "Ошибка импорта DatabaseManager.",
+    "db_path_import_error": "Ошибка импорта DAYLOG_DB_PATH из config_tlg."
 }

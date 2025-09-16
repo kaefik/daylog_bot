@@ -87,5 +87,11 @@
     "type_float": "öźmä noqtala han",
     "type_list": "varianttar isemlege",
     "db_diary_initialized": "Dnevnik bazah buldyrldy.",
-    "db_diary_exists": "Dnevnik bazah inde bar."
+    "db_diary_exists": "Dnevnik bazah inde bar.",
+    "diary_user_required": "Hez köndälekkä terkälmägänhegez. Başta /start komandahın başqarağız.",
+    "today_entry_exists": "Bögöngä yazma inde bar.",
+    "today_entry_created": "Bögöngä yañı yazma buldyrıldı.",
+    "today_entry_error": "Yazma buldyru hatalıgı.",
+    "db_manager_import_error": "DatabaseManager importlaw hatalıgı.",
+    "db_path_import_error": "config_tlg-tan DAYLOG_DB_PATH importlaw hatalıgı."
 }

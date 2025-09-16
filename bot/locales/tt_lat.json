@@ -87,5 +87,11 @@
     "type_float": "yözmä noqtalı san",
     "type_list": "variantlar isemlege",
     "db_diary_initialized": "Köndälek bazası buldyrıldı.",
-    "db_diary_exists": "Köndälek bazası inde bar."
+    "db_diary_exists": "Köndälek bazası inde bar.",
+    "diary_user_required": "Sez köndälekkä terkälmägänsez. Başta /start komandasin başqarıgız.",
+    "today_entry_exists": "Bügenge yazma inde bar.",
+    "today_entry_created": "Bügenge yaña yazma buldyrıldı.",
+    "today_entry_error": "Yazma buldıru xatası.",
+    "db_manager_import_error": "DatabaseManager importlaw xatası.",
+    "db_path_import_error": "config_tlg-tan DAYLOG_DB_PATH importlaw xatası."
 }

@@ -87,5 +87,11 @@
     "type_float": "өҙмә нөктәлә һан",
     "type_list": "варианттар исемлеге",
     "db_diary_initialized": "Дневник базаһы булдырылды.",
-    "db_diary_exists": "Дневник базаһы инде бар."
+    "db_diary_exists": "Дневник базаһы инде бар.",
+    "diary_user_required": "Һеҙ көндәлеккә теркәлмәгәнһегеҙ. Башта /start командаһын башҡарығыҙ.",
+    "today_entry_exists": "Бөгөнгә яҙма инде бар.",
+    "today_entry_created": "Бөгөнгә яңы яҙма булдырылды.",
+    "today_entry_error": "Яҙма булдырыу хаталығы.",
+    "db_manager_import_error": "DatabaseManager импортлау хаталығы.",
+    "db_path_import_error": "config_tlg-тан DAYLOG_DB_PATH импортлау хаталығы."
 }

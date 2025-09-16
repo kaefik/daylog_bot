@@ -87,5 +87,11 @@
     "type_float": "floating number",
     "type_list": "list of options",
     "db_diary_initialized": "Diary database has been created.",
-    "db_diary_exists": "Diary database already exists."
+    "db_diary_exists": "Diary database already exists.",
+    "diary_user_required": "You are not registered in the diary. Please run the /start command first.",
+    "today_entry_exists": "Today's entry already exists.",
+    "today_entry_created": "A new entry for today has been created.",
+    "today_entry_error": "Error creating entry.",
+    "db_manager_import_error": "DatabaseManager import error.",
+    "db_path_import_error": "DAYLOG_DB_PATH import error from config_tlg."
 }
