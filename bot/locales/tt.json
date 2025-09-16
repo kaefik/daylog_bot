@@ -93,5 +93,6 @@
     "today_entry_created": "Бүгенгә яңа язма булдырылды.",
     "today_entry_error": "Язма булдыру хатасы.",
     "db_manager_import_error": "DatabaseManager импортлау хатасы.",
-    "db_path_import_error": "config_tlg-тан DAYLOG_DB_PATH импортлау хатасы."
+    "db_path_import_error": "config_tlg-тан DAYLOG_DB_PATH импортлау хатасы.",
+    "diary_user_already_exists": "Сез көндәлеккә инде теркәлгәнсез!"
 }

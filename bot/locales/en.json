@@ -93,5 +93,6 @@
     "today_entry_created": "A new entry for today has been created.",
     "today_entry_error": "Error creating entry.",
     "db_manager_import_error": "DatabaseManager import error.",
-    "db_path_import_error": "DAYLOG_DB_PATH import error from config_tlg."
+    "db_path_import_error": "DAYLOG_DB_PATH import error from config_tlg.",
+    "diary_user_already_exists": "You are already registered in the diary!"
 }

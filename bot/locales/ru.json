@@ -93,5 +93,6 @@
     "today_entry_created": "Создана новая запись за сегодня.",
     "today_entry_error": "Ошибка при создании записи.",
     "db_manager_import_error": "Ошибка импорта DatabaseManager.",
-    "db_path_import_error": "Ошибка импорта DAYLOG_DB_PATH из config_tlg."
+    "db_path_import_error": "Ошибка импорта DAYLOG_DB_PATH из config_tlg.",
+    "diary_user_already_exists": "Вы уже зарегистрированы в дневнике!"
 }

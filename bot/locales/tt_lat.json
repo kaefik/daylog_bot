@@ -93,5 +93,6 @@
     "today_entry_created": "Bügenge yaña yazma buldyrıldı.",
     "today_entry_error": "Yazma buldıru xatası.",
     "db_manager_import_error": "DatabaseManager importlaw xatası.",
-    "db_path_import_error": "config_tlg-tan DAYLOG_DB_PATH importlaw xatası."
+    "db_path_import_error": "config_tlg-tan DAYLOG_DB_PATH importlaw xatası.",
+    "diary_user_already_exists": "Sez köndälekkä inde terkälgänsez!"
 }
