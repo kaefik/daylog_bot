@@ -85,5 +85,7 @@
     "type_int": "number",
     "type_string": "string",
     "type_float": "floating number",
-    "type_list": "list of options"
+    "type_list": "list of options",
+    "db_diary_initialized": "Diary database has been created.",
+    "db_diary_exists": "Diary database already exists."
 }

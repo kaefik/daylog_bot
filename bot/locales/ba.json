@@ -85,5 +85,7 @@
     "type_int": "һан",
     "type_string": "юл",
     "type_float": "өҙмә нөктәлә һан",
-    "type_list": "варианттар исемлеге"
+    "type_list": "варианттар исемлеге",
+    "db_diary_initialized": "Дневник базаһы булдырылды.",
+    "db_diary_exists": "Дневник базаһы инде бар."
 }

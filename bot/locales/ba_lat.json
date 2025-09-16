@@ -85,5 +85,7 @@
     "type_int": "han",
     "type_string": "yul",
     "type_float": "öźmä noqtala han",
-    "type_list": "varianttar isemlege"
+    "type_list": "varianttar isemlege",
+    "db_diary_initialized": "Dnevnik bazah buldyrldy.",
+    "db_diary_exists": "Dnevnik bazah inde bar."
 }

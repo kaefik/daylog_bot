@@ -85,5 +85,7 @@
     "type_int": "san",
     "type_string": "yul",
     "type_float": "yözmä noqtalı san",
-    "type_list": "variantlar isemlege"
+    "type_list": "variantlar isemlege",
+    "db_diary_initialized": "Köndälek bazası buldyrıldı.",
+    "db_diary_exists": "Köndälek bazası inde bar."
 }
