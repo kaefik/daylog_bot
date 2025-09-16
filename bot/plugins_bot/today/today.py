@@ -20,9 +20,19 @@ async def today_handler(event):
     entry = db.get_diary_entry(user_id, today)
     if entry:
         await event.reply("Запись за сегодня уже существует.")
+        return
+
+    # Проверяем, есть ли пользователь в users
+    user_row = db.get_user(user_id)
+    if not user_row:
+        # Добавляем пользователя (username и имя берём из event, если есть)
+        username = getattr(event.sender, 'username', None) if hasattr(event, 'sender') else None
+        first_name = getattr(event.sender, 'first_name', None) if hasattr(event, 'sender') else None
+        last_name = getattr(event.sender, 'last_name', None) if hasattr(event, 'sender') else None
+        db.create_user(user_id, username=username, first_name=first_name, last_name=last_name)
+
+    created = db.create_diary_entry(user_id, today)
+    if created:
+        await event.reply("Создана новая запись за сегодня.")
     else:
-        created = db.create_diary_entry(user_id, today)
-        if created:
-            await event.reply("Создана новая запись за сегодня.")
-        else:
-            await event.reply("Ошибка при создании записи.")
+        await event.reply("Ошибка при создании записи.")
