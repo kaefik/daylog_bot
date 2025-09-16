@@ -5,6 +5,7 @@ settings.db
 cfg/config_tlg.py
 mp3/
 *.db
+*.session-journal
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
