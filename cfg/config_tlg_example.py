@@ -30,3 +30,5 @@ AVAILABLE_LANGS = {
     "tt_lat": "Татарча (латинца)",
     "ba_lat": "Башҡортса (латинца)",
 }
+
+DAYLOG_DB_PATH = "./data/database/daylog.db"  # путь к файлу БД дневника
