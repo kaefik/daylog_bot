@@ -7,64 +7,38 @@
 """
 
 import os
+from typing import Optional, List, Union, Any
 from enum import Enum
+from ..models import User, Role
+from cfg import config_tlg  # Добавьте импорт конфига для доступа к DEFAULT_LANG
 
-from tlgbotcore.csvdbutils.csvdb.csvdb import CSVDB
+from .csvdb.csvdb import CSVDB
 
-from icecream import ic
+# icecream убран из продакшн кода - используем logging
 
+
+# безопасное преобразование значений в bool и 0/1
+def _to_bool(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    s = str(value).strip().lower()
+    return s in ("1", "true", "yes", "y", "on")
+
+
+def _to_int_flag(value: Any) -> int:
+    return 1 if _to_bool(value) else 0
 
 # доступные роли пользователя
-class Role(Enum):
-    admin = 1
-    user = 2
+# роли берём из общих моделей
 
 
-# --------- Здесь должны описываться настройки пользователей в виде перечислений
-# типы результата работы
-# class SettingOne(Enum):
-#     video = 1
-#     sound = 2
-#
-#
-# class SettingTwo(Enum):
-#     low = 1
-#     medium = 2
-#     high = 3
+# --------- Зарезервировано для пользовательских настроек (перечисления) ---------
+# Здесь могут описываться дополнительные настройки пользователей при необходимости.
 
-
-# --------- END Здесь должны описываться настройки пользователей в виде перечислений
-
-# данные конкретного пользователя
-class User:
-
-    def __init__(self, id=-1):
-        self._id = id
-        self._name = ''
-        self._active = False
-        self._role = Role.user
-        self._typeresult = SettingOne.sound
-        self._qualityresult = SettingTwo.medium
-
-    def __init__(self, id=-1, name='', active=False, role=Role.user):
-        self._id = id
-        self._name = name
-        self._active = active
-        # if active == 0:
-        #     self._active = False
-        # else:
-        #     self._active = True
-
-        # TODO: понять как из строки перевести в тип enum без бесконечных if
-        if type(role) is Role:
-            self._role = role
-        elif type(role) is str:
-            if role == 'Role.admin':
-                self._role = Role.admin
-            elif role == 'Role.user':
-                self._role = Role.user
-        else:
-            self._role = Role.user
+# данные конкретного пользователя  
+# Используем базовый User из models, расширяем только свойства
+class CSVUser(User):
+    pass
 
     @property
     def id(self):
@@ -122,7 +96,7 @@ class User:
 
 class SettingUser:
 
-    def __init__(self, namedb='settings_db', force=False):
+    def __init__(self, namedb: str = 'settings_db', force: bool = False) -> None:
         """
             инициализация БД настроек бота
                 namedb - название БД
@@ -131,7 +105,7 @@ class SettingUser:
         self.db = namedb  # имя БД настроек бота
         self.__createnewdb(force)  # коннект в БД
 
-    def open(self):
+    def open(self) -> None:
         """
             открыть файл настроек
         """
@@ -144,7 +118,7 @@ class SettingUser:
         #     return True
         pass
 
-    def close(self):
+    def close(self) -> None:
         """
             закрытие подключения к БД
         """
@@ -152,7 +126,7 @@ class SettingUser:
         #     self.connect.close()
         pass
 
-    def __createnewdb(self, force=False):
+    def __createnewdb(self, force: bool = False) -> bool:
         """
             создание БД настроек бота
             возвращает True, если операция создания успешно.
@@ -167,13 +141,14 @@ class SettingUser:
                 name - имя пользователя text
                 active - если 0, пользователь неактивный, иначе пользователь активный (тип: INTEGER)
                 role - роль пользователя: admin - администратор бота, user - обычный пользователь бота (тип: text)
+                lang - язык пользователя (text)
         """
-        headers_user = ['id', 'name', 'active', 'role']
+        headers_user = ['id', 'name', 'active', 'role', 'lang']
         self.connect.create_table(name_table='user', colums=headers_user)
 
         return True
 
-    def add_user(self, new_user):
+    def add_user(self, new_user: User) -> bool:
         """
             добавление нового пользователя new_user (тип User)
             возвращает: True - операция добавления пользователя удалась, False - ошибка при добавлении или пользователь существует
@@ -183,12 +158,18 @@ class SettingUser:
         id_exist = self.is_exist_user(new_user.id)
         if id_exist:  # проверка на то что пользователь с данным id есть пользователь
             return False
-        data = {'id': new_user.id, 'name': new_user.name, 'active': new_user.active, 'role': new_user.role}
+        data = {
+            'id': new_user.id,
+            'name': new_user.name,
+            'active': _to_int_flag(new_user.active),
+            'role': str(new_user.role),
+            'lang': getattr(new_user, "lang", None) or getattr(config_tlg, "DEFAULT_LANG", "ru"),
+        }
         self.connect.insert_data(name_table='user', data=data)
 
         return True
 
-    def is_exist_user(self, idd):
+    def is_exist_user(self, idd: int) -> bool:
         """
             проверить есть ли БД пользователь с id
             тест: ok
@@ -199,7 +180,7 @@ class SettingUser:
         else:
             return False
 
-    def del_user(self, idd):
+    def del_user(self, idd: int) -> bool:
         """
             удаление пользователя с id
             тест: ok
@@ -216,13 +197,11 @@ class SettingUser:
                 self.connect.insert_data(name_table='user', data=el)
         return True
 
-    def update_user(self, new_user):
+    def update_user(self, new_user: User) -> bool:
         """
             обновить данные пользователя  User, если такого пользователя нет, то добавляется новый пользователь
             тест: ok
         """
-        # """Update sqlitedb_developers set salary = 10000 where id = 4"""
-
         if not self.is_exist_user(new_user.id):
             self.add_user(new_user)
 
@@ -232,16 +211,22 @@ class SettingUser:
 
         for el in all_data:
             if int(el['id']) == new_user.id:
-                # ic(new_user.active)
-                self.connect.insert_data(name_table='user',
-                                         data={'id': new_user.id, 'name': new_user.name, 'active': new_user.active,
-                                               'role': new_user.role})
+                self.connect.insert_data(
+                    name_table='user',
+                    data={
+                        'id': new_user.id,
+                        'name': new_user.name,
+                        'active': _to_int_flag(new_user.active),
+                        'role': str(new_user.role),
+                        'lang': getattr(new_user, "lang", None) or getattr(config_tlg, "DEFAULT_LANG", "ru"),
+                    },
+                )
             else:
                 self.connect.insert_data(name_table='user', data=el)
 
         return True
 
-    def get_user(self, idd):
+    def get_user(self, idd: int) -> Optional[User]:
         """
             получить информацию о пользователе по id
             тест: ok
@@ -252,12 +237,18 @@ class SettingUser:
 
         for el in all_data:
             if int(el['id']) == idd:
-                result = User(id=int(el['id']), name=el['name'], active=eval(el['active']), role=el['role'])
+                result = User(
+                    id=int(el['id']),
+                    name=el['name'],
+                    active=_to_bool(el['active']),
+                    role=el['role'],
+                    lang=el['lang'] if 'lang' in el and el['lang'] else getattr(config_tlg, "DEFAULT_LANG", "ru")
+                )
                 return result
 
         return result
 
-    def get_all_user(self):
+    def get_all_user(self) -> List[User]:
         """
             получить всех пользователей
             тест: ok
@@ -266,12 +257,18 @@ class SettingUser:
         all_data = self.connect.getall(name_table='user')
 
         for el in all_data:
-            usr = User(id=int(el['id']), name=el['name'], active=eval(el['active']), role=el['role'])
+            usr = User(
+                id=int(el['id']),
+                name=el['name'],
+                active=_to_bool(el['active']),
+                role=el['role'],
+                lang=el['lang'] if 'lang' in el and el['lang'] else getattr(config_tlg, "DEFAULT_LANG", "ru")
+            )
             result.append(usr)
 
         return result
 
-    def get_all_user_id(self):
+    def get_all_user_id(self) -> List[int]:
         """
             получить все ID пользователей
             тест: -
@@ -284,7 +281,7 @@ class SettingUser:
 
         return result
 
-    def get_user_type(self, type_user):
+    def get_user_type(self, type_user: Role) -> List[User]:
         """
             получение всех пользователей с типом type_user (тип Role)
             возвращает: массив пользователей, если пользователей нет, то пустой массив
@@ -298,12 +295,17 @@ class SettingUser:
 
         for el in all_data:
             if el['role'] == str(type_user):
-                usr = User(id=int(el['id']), name=el['name'], active=el['active'], role=el['role'])
+                usr = User(
+                    id=int(el['id']),
+                    name=el['name'],
+                    active=_to_bool(el['active']),
+                    role=el['role'],
+                )
                 result.append(usr)
 
         return result
 
-    def get_user_type_id(self, type_user):
+    def get_user_type_id(self, type_user: Role) -> List[int]:
         """
             получение всех пользователей  ID с типом type_user (тип Role)
             возвращает: массив пользователей, если пользователей нет, то пустой массив
@@ -315,7 +317,7 @@ class SettingUser:
             result.append(user.id)
         return result
 
-    def fix_settings(self):
+    def fix_settings(self) -> None:
         """
             починка БД настроек пользователя,
             например каким-то образом информация о пользователе есть только в одной таблице
