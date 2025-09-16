@@ -15,7 +15,13 @@ async def today_handler(event):
         await event.reply("Ошибка импорта DatabaseManager.")
         return
 
-    db = DatabaseManager()
+    try:
+        from cfg.config_tlg import DAYLOG_DB_PATH
+    except ImportError:
+        await event.reply("Ошибка импорта DAYLOG_DB_PATH из config_tlg.")
+        return
+
+    db = DatabaseManager(db_path=DAYLOG_DB_PATH)
     today = date.today()
     entry = db.get_diary_entry(user_id, today)
     if entry:
