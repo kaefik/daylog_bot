@@ -94,5 +94,35 @@
     "today_entry_error": "Ошибка при создании записи.",
     "db_manager_import_error": "Ошибка импорта DatabaseManager.",
     "db_path_import_error": "Ошибка импорта DAYLOG_DB_PATH из config_tlg.",
-    "diary_user_already_exists": "Вы уже зарегистрированы в дневнике!"
+    "diary_user_already_exists": "Вы уже зарегистрированы в дневнике!",
+
+    "today_mood_prompt": "Какое у вас сегодня настроение?",
+    "today_weather_prompt": "Какая сегодня погода?",
+    "today_location_prompt": "Где вы находитесь?",
+    "today_events_prompt": "Опишите события дня (или нажмите 'Пропустить'):",
+    "today_weather_manual": "Введите описание погоды:",
+    "today_location_manual": "Введите ваше местоположение:",
+    
+    "mood_excellent": "Отлично",
+    "mood_good": "Хорошо",
+    "mood_normal": "Нормально",
+    "mood_bad": "Плохо",
+    "mood_terrible": "Ужасно",
+    
+    "weather_sunny": "Солнечно",
+    "weather_cloudy": "Облачно",
+    "weather_rainy": "Дождь",
+    "weather_snowy": "Снег",
+    "weather_foggy": "Туман",
+    
+    "location_home": "Дом",
+    "location_work": "Работа",
+    "location_street": "Улица",
+    
+    "btn_skip": "Пропустить",
+    "btn_back": "Назад",
+    "btn_manual": "Ввести вручную",
+    
+    "form_invalid_state": "Неверное состояние формы",
+    "form_first_step": "Это первый шаг"
 }
