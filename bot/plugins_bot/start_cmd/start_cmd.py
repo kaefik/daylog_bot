@@ -10,9 +10,9 @@ tlgbot = globals().get('tlgbot')
 
 # кнопки команд
 button_main_cmd = [
-    [Button.text(tlgbot.i18n.t('start_cmd_1', lang=tlgbot.i18n.default_lang) if hasattr(tlgbot, 'i18n') else "команда1"),
-     Button.text(tlgbot.i18n.t('start_cmd_2', lang=tlgbot.i18n.default_lang) if hasattr(tlgbot, 'i18n') else "команда2")],
-    [Button.text(tlgbot.i18n.t('start_cmd_3', lang=tlgbot.i18n.default_lang) if hasattr(tlgbot, 'i18n') else "команда3"),
+    [Button.text("/today"),
+     Button.text("/yesterday")],
+    [Button.text("/view"),
      Button.text(tlgbot.i18n.t('start_cmd_4', lang=tlgbot.i18n.default_lang) if hasattr(tlgbot, 'i18n') else "команда4")]
 ]
 
