@@ -3,8 +3,8 @@
     "no_access": "You have no access to the bot. Your id is {user_id}. Contact the administrator.",
     "choose_lang": "Choose a language. Available languages:",
     "lang_not_supported": "Language with code {code} is not supported.",
-    "lang_changed": "Language successfully changed to {lang_name}."
-    ,
+    "lang_changed": "Language successfully changed to {lang_name}.",
+
     "reload_core_forbidden": "The _core plugin cannot be reloaded.",
     "reload_success": "Successfully (re)loaded plugin {name}.",
     "reload_failed": "Failed to (re)load plugin {name}: {error}",
@@ -54,21 +54,19 @@
     "plugin_syntax_error": "Syntax error in plugin {name}: {error}",
     "plugin_unexpected_error": "Unexpected error while loading plugin {name} from {path}: {error}",
     "unload_unhandled_exception": "Unhandled exception unloading {name}",
-    "removed_plugin": "Removed plugin {name}"
-    ,
+    "removed_plugin": "Removed plugin {name}",
+
     "inline_choose": "Choose an action:",
     "start_welcome": "Hi! Press commands to get information!",
-    "runner_finished": "Conversation finished."
-    ,
-        "inline_button_today": "today",
-        "inline_button_tomorrow": "tomorrow",
-        "inline_button_any": "any day",
-        "inline_choice_selected": "You selected - {choice}",
-    "noauth_attempt_notify": "User with id {user_id} attempted to gain access"
-    ,
-    "user_info_error": "Error getting info for user id {user_id}: {err}"
+    "runner_finished": "Conversation finished.",
 
-    ,
+    "inline_button_today": "today",
+    "inline_button_tomorrow": "tomorrow",
+    "inline_button_any": "any day",
+    "inline_choice_selected": "You selected - {choice}",
+    "noauth_attempt_notify": "User with id {user_id} attempted to gain access",
+    "user_info_error": "Error getting info for user id {user_id}: {err}",
+
     "start_cmd_1": "command1",
     "start_cmd_2": "command2",
     "start_cmd_3": "command3",
@@ -90,9 +88,53 @@
     "db_diary_exists": "Diary database already exists.",
     "diary_user_required": "You are not registered in the diary. Please run the /start command first.",
     "today_entry_exists": "Today's entry already exists.",
+    "today_entry_exists_edit": "Today's entry already exists. Would you like to edit it?",
     "today_entry_created": "A new entry for today has been created.",
+    "today_entry_updated": "Today's entry has been successfully updated!",
     "today_entry_error": "Error creating entry.",
+    "today_entry_update_error": "Error updating entry.",
     "db_manager_import_error": "DatabaseManager import error.",
     "db_path_import_error": "DAYLOG_DB_PATH import error from config_tlg.",
-    "diary_user_already_exists": "You are already registered in the diary!"
+    "diary_user_already_exists": "You are already registered in the diary!",
+
+    "today_mood_prompt": "How is your mood today?",
+    "today_weather_prompt": "What's the weather like today?",
+    "today_location_prompt": "Where are you?",
+    "today_events_prompt": "Describe the events of the day (or click 'Skip'):",
+    "today_weather_manual": "Enter weather description:",
+    "today_location_manual": "Enter your location:",
+    
+    "mood_excellent": "Excellent",
+    "mood_good": "Good",
+    "mood_normal": "Normal",
+    "mood_bad": "Bad",
+    "mood_terrible": "Terrible",
+    
+    "weather_sunny": "Sunny",
+    "weather_cloudy": "Cloudy",
+    "weather_rainy": "Rain",
+    "weather_snowy": "Snow",
+    "weather_foggy": "Foggy",
+    
+    "location_home": "Home",
+    "location_work": "Work",
+    "location_street": "Street",
+    
+    "btn_skip": "Skip",
+    "btn_back": "Back",
+    "btn_manual": "Enter manually",
+    
+    "form_invalid_state": "Invalid form state",
+    "form_first_step": "This is the first step",
+    
+    "btn_edit": "Edit",
+    "btn_cancel": "Cancel",
+    "edit_canceled": "Editing canceled.",
+    "entry_not_found": "Entry not found.",
+    "not_specified": "Not specified",
+    
+    "edit_mood_prompt": "Current mood: {mood}. Choose a new mood:",
+    "edit_weather_prompt": "Current weather: {weather}. Choose a new weather:",
+    "edit_location_prompt": "Current location: {location}. Choose a new location:",
+    "edit_events_prompt": "Current events: {events}. Describe new events of the day (or click 'Skip'):"
 }

@@ -90,9 +90,53 @@
     "db_diary_exists": "Dnevnik bazah inde bar.",
     "diary_user_required": "Hez köndälekkä terkälmägänhegez. Başta /start komandahın başqarağız.",
     "today_entry_exists": "Bögöngä yazma inde bar.",
+    "today_entry_exists_edit": "Bögöngä yazma inde bar. Unı möxärrirlärgä teläyhegezme?",
     "today_entry_created": "Bögöngä yañı yazma buldyrıldı.",
+    "today_entry_updated": "Bögöngä yazma uñışlı yañartıldı!",
     "today_entry_error": "Yazma buldyru hatalıgı.",
+    "today_entry_update_error": "Yazmanı yañartıu xatalığı.",
     "db_manager_import_error": "DatabaseManager importlaw hatalıgı.",
     "db_path_import_error": "config_tlg-tan DAYLOG_DB_PATH importlaw hatalıgı.",
-    "diary_user_already_exists": "Hez köndälekkä inde terkälgänhegez!"
+    "diary_user_already_exists": "Hez köndälekkä inde terkälgänhegez!",
+
+    "today_mood_prompt": "Bögön käyefegez nisek?",
+    "today_weather_prompt": "Bögön hawa toroşo nisek?",
+    "today_location_prompt": "Hez qayza urınlaşqanhığız?",
+    "today_events_prompt": "Kön waqiğaların tasuirlağız (yäki 'Töşöröp qaldırıu' töymähena bahığız):",
+    "today_weather_manual": "Hawa toroşon yazıp inderegez:",
+    "today_location_manual": "Urınlaşıuığızzı yazıp inderegez:",
+    
+    "mood_excellent": "Bik yaqşı",
+    "mood_good": "Yaqşı",
+    "mood_normal": "Normal",
+    "mood_bad": "Nasar",
+    "mood_terrible": "Bik nasar",
+    
+    "weather_sunny": "Qoyaşlı",
+    "weather_cloudy": "Bolotlo",
+    "weather_rainy": "Yamğır",
+    "weather_snowy": "Qar",
+    "weather_foggy": "Toman",
+    
+    "location_home": "Öy",
+    "location_work": "Eş",
+    "location_street": "Uram",
+    
+    "btn_skip": "Töşöröp qaldırıu",
+    "btn_back": "Kire",
+    "btn_manual": "Qul menän indereü",
+    
+    "form_invalid_state": "Formanıñ dörös bulmağan toroşo",
+    "form_first_step": "Bıl täüge azım",
+    
+    "btn_edit": "Möxärrirläü",
+    "btn_cancel": "Baş tartıu",
+    "edit_canceled": "Möxärrirläüzän baş tartıldı.",
+    "entry_not_found": "Yazma tabılmanı.",
+    "not_specified": "Kürhätelmägän",
+    
+    "edit_mood_prompt": "Xäzerge käyef: {mood}. Yañı käyef haylağız:",
+    "edit_weather_prompt": "Xäzerge hawa toroşo: {weather}. Yañı hawa toroşo haylağız:",
+    "edit_location_prompt": "Xäzerge urınlaşıu: {location}. Yañı urınlaşıu haylağız:",
+    "edit_events_prompt": "Xäzerge waqiğalar: {events}. Yañı kön waqiğaların tasuirlağız (yäki 'Töşöröp qaldırıu' töymähena bahığız):"
 }

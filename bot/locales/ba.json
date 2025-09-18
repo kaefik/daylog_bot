@@ -90,9 +90,53 @@
     "db_diary_exists": "Дневник базаһы инде бар.",
     "diary_user_required": "Һеҙ көндәлеккә теркәлмәгәнһегеҙ. Башта /start командаһын башҡарығыҙ.",
     "today_entry_exists": "Бөгөнгә яҙма инде бар.",
+    "today_entry_exists_edit": "Бөгөнгә яҙма инде бар. Уны мөхәррирләргә теләйһегеҙме?",
     "today_entry_created": "Бөгөнгә яңы яҙма булдырылды.",
+    "today_entry_updated": "Бөгөнгә яҙма уңышлы яңыртылды!",
     "today_entry_error": "Яҙма булдырыу хаталығы.",
+    "today_entry_update_error": "Яҙманы яңыртыу хаталығы.",
     "db_manager_import_error": "DatabaseManager импортлау хаталығы.",
     "db_path_import_error": "config_tlg-тан DAYLOG_DB_PATH импортлау хаталығы.",
-    "diary_user_already_exists": "Һеҙ көндәлеккә инде теркәлгәнһегеҙ!"
+    "diary_user_already_exists": "Һеҙ көндәлеккә инде теркәлгәнһегеҙ!",
+
+    "today_mood_prompt": "Бөгөн кәйефегеҙ нисек?",
+    "today_weather_prompt": "Бөгөн һауа торошо нисек?",
+    "today_location_prompt": "Һеҙ ҡайҙа урынлашҡанһығыҙ?",
+    "today_events_prompt": "Көн ваҡиғаларын тасуирлағыҙ (йәки 'Төшөрөп ҡалдырыу' төймәһенә баҫығыҙ):",
+    "today_weather_manual": "Һауа торошон яҙып индерегеҙ:",
+    "today_location_manual": "Урынлашыуығыҙҙы яҙып индерегеҙ:",
+    
+    "mood_excellent": "Бик яҡшы",
+    "mood_good": "Яҡшы",
+    "mood_normal": "Нормаль",
+    "mood_bad": "Насар",
+    "mood_terrible": "Бик насар",
+    
+    "weather_sunny": "Ҡояшлы",
+    "weather_cloudy": "Болотло",
+    "weather_rainy": "Ямғыр",
+    "weather_snowy": "Ҡар",
+    "weather_foggy": "Томан",
+    
+    "location_home": "Өй",
+    "location_work": "Эш",
+    "location_street": "Урам",
+    
+    "btn_skip": "Төшөрөп ҡалдырыу",
+    "btn_back": "Кире",
+    "btn_manual": "Ҡул менән индереү",
+    
+    "form_invalid_state": "Форманың дөрөҫ булмаған торошо",
+    "form_first_step": "Был тәүге аҙым",
+    
+    "btn_edit": "Мөхәррирләү",
+    "btn_cancel": "Баш тартыу",
+    "edit_canceled": "Мөхәррирләүҙән баш тартылды.",
+    "entry_not_found": "Яҙма табылманы.",
+    "not_specified": "Күрһәтелмәгән",
+    
+    "edit_mood_prompt": "Хәҙерге кәйеф: {mood}. Яңы кәйеф һайлағыҙ:",
+    "edit_weather_prompt": "Хәҙерге һауа торошо: {weather}. Яңы һауа торошо һайлағыҙ:",
+    "edit_location_prompt": "Хәҙерге урынлашыу: {location}. Яңы урынлашыу һайлағыҙ:",
+    "edit_events_prompt": "Хәҙерге ваҡиғалар: {events}. Яңы көн ваҡиғаларын тасуирлағыҙ (йәки 'Төшөрөп ҡалдырыу' төймәһенә баҫығыҙ):"
 }
