@@ -169,6 +169,7 @@ async def today_handler(event):
         buttons = [
             [
                 Button.inline(tlgbot.i18n.t('btn_edit', lang=lang) or "Редактировать", data="edit_today"),
+                Button.inline(tlgbot.i18n.t('btn_edit_events_only', lang=lang) or "Редактировать событие", data="edit_today_events"),
                 Button.inline(tlgbot.i18n.t('btn_cancel', lang=lang) or "Отмена", data="cancel_edit")
             ]
         ]
@@ -393,7 +394,7 @@ async def location_callback_handler(event):
         # Исправляем вызов метода локализации, передавая параметр events напрямую
         edit_events_message = tlgbot.i18n.t('edit_events_prompt', lang=lang, events=current_events)
         if not edit_events_message:
-            edit_events_message = f"Текущие события: {current_events}. Опишите новые события дня (или нажмите 'Пропустить'):"
+            edit_events_message = f"Текущие события:\n{current_events}.\n\nОпишите новые события дня (или нажмите 'Пропустить'):"
             
         await event.edit(
             edit_events_message,
@@ -457,7 +458,7 @@ async def events_callback_handler(event):
         
         replace_message = tlgbot.i18n.t('events_replace_prompt', lang=lang, events=current_events)
         if not replace_message:
-            replace_message = f"Текущие события: \"{current_events}\"\nВведите новый текст, который полностью заменит текущий:"
+            replace_message = f"Текущие события:\n\"{current_events}\"\n\nВведите новый текст, который полностью заменит текущий:"
             
         await event.edit(replace_message)
         # Ожидаем ввод пользователя, который будет обработан в handle_manual_input
@@ -470,7 +471,7 @@ async def events_callback_handler(event):
         
         append_message = tlgbot.i18n.t('events_append_prompt', lang=lang, events=current_events)
         if not append_message:
-            append_message = f"Текущие события: \"{current_events}\"\nВведите текст, который будет добавлен к текущему:"
+            append_message = f"Текущие события:\n\"{current_events}\"\n\nВведите текст, который будет добавлен к текущему:"
             
         await event.edit(append_message)
         # Ожидаем ввод пользователя, который будет обработан в handle_manual_input
@@ -486,7 +487,7 @@ async def events_callback_handler(event):
         
         edit_message = tlgbot.i18n.t('events_edit_prompt', lang=lang, events=current_events)
         if not edit_message:
-            edit_message = f"Текущие события: \"{current_events}\"\nОтредактируйте текст:"
+            edit_message = f"Текущие события:\n\"{current_events}\"\n\nОтредактируйте текст:"
             
         # Устанавливаем начальный текст для ввода пользователя
         # В Telethon нельзя напрямую установить текст в поле ввода,
@@ -647,7 +648,7 @@ async def handle_manual_input(event):
             # Исправляем вызов метода локализации, передавая параметр events напрямую
             edit_events_message = tlgbot.i18n.t('edit_events_prompt', lang=lang, events=current_events)
             if not edit_events_message:
-                edit_events_message = f"Текущие события: {current_events}. Опишите новые события дня (или нажмите 'Пропустить'):"
+                edit_events_message = f"Текущие события:\n{current_events}.\n\nОпишите новые события дня (или нажмите 'Пропустить'):"
                 
             await event.reply(
                 edit_events_message,
@@ -746,7 +747,7 @@ async def handle_manual_input(event):
             await event.reply(f"Ошибка: {str(e)}")
 
 # Обработчик для кнопок редактирования существующей записи
-@tlgbot.on(events.CallbackQuery(pattern="edit_today|cancel_edit"))
+@tlgbot.on(events.CallbackQuery(pattern="edit_today|edit_today_events|cancel_edit"))
 async def edit_today_handler(event):
     user_id = event.sender_id
     user = getattr(tlgbot, 'settings', None).get_user(user_id) if getattr(tlgbot, 'settings', None) else None
@@ -759,7 +760,7 @@ async def edit_today_handler(event):
         await event.edit(tlgbot.i18n.t('edit_canceled', lang=lang) or "Редактирование отменено.")
         return
     
-        # Начинаем редактирование
+    # Начинаем редактирование
     try:
         from core.database.manager import DatabaseManager
         from cfg.config_tlg import DAYLOG_DB_PATH
@@ -786,11 +787,44 @@ async def edit_today_handler(event):
         # Выводим информацию о записи в лог для отладки
         print(f"DEBUG: Entry data for edit: {entry}")
         
-        # Сохраняем текущие данные для редактирования с безопасными значениями по умолчанию
+        # Если это редактирование только событий
+        if data == "edit_today_events":
+            # Сохраняем текущие данные, но переходим сразу к редактированию событий
+            user_form_data[user_id] = {
+                "entry_date": today,
+                "edit_mode": True,
+                "mood": entry.get("mood", ""),
+                "weather": entry.get("weather", ""),
+                "location": entry.get("location", ""),
+                "events": entry.get("events", "")
+            }
+            
+            # Начинаем с шага редактирования событий
+            user_states[user_id] = FormState.WAITING_EVENTS
+            
+            # Получаем текущее значение событий безопасно
+            current_events = user_form_data[user_id].get("events", "")
+            if not current_events:
+                current_events = tlgbot.i18n.t('not_specified', lang=lang) or "Не указано"
+            
+            # Исправляем вызов метода локализации, передавая параметр events напрямую
+            edit_events_message = tlgbot.i18n.t('edit_events_prompt', lang=lang, events=current_events)
+            if not edit_events_message:
+                edit_events_message = f"Текущие события:\n{current_events}.\n\nОпишите новые события дня (или нажмите 'Пропустить'):"
+                
+            await event.edit(
+                edit_events_message,
+                buttons=get_events_keyboard(lang, edit_mode=True)
+            )
+            return
+        
+        # Иначе полное редактирование - сохраняем текущие данные для редактирования с безопасными значениями по умолчанию
         user_form_data[user_id] = {
             "entry_date": today,
             "edit_mode": True
-        }        # Безопасно добавляем значения, если они существуют
+        }
+        
+        # Безопасно добавляем значения, если они существуют
         # Теперь мы можем быть уверены, что все ключи существуют в записи благодаря улучшениям в DatabaseManager
         user_form_data[user_id]["mood"] = entry.get("mood", "")
         user_form_data[user_id]["weather"] = entry.get("weather", "")

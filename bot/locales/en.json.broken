@@ -1,7 +1,34 @@
 {
     "greeting": "Hello!!",
     "no_access": "You have no access to the bot. Your id is {user_id}. Contact the administrator.",
-    "choose_language": "Choose a language. Available languages:",
+    "choose_language": "Choose    "edit_mood_prompt": "Current mood: {mood}. Choose a new mood:",
+    "edit_weather_prompt": "Current weather: {weather}. Choose new weather:",
+    "edit_location_prompt": "Current location: {location}. Choose a new location:",
+    "edit_events_prompt": "Current events:\n{events}.\n\nDescribe new events of the day (or click 'Skip'):",
+    
+    "events_replace_prompt": "Current events:\n\"{events}\"\n\nEnter new text to completely replace current one:",
+    "events_append_prompt": "Current events:\n\"{events}\"\n\nEnter text to append to current one:",
+    "events_edit_prompt": "Current events:\n\"{events}\"\n\nEdit the text:",age. Available languages:",
+    "lang_not_supported": "Language with code {code} is not supported.",
+    "lang_changed": "Language successfully changed to {lang_name}.",
+
+    "edit_mood_prompt": "Current mood: {mood}. Choose a new mood:",
+    "edit_weather_prompt": "Current weather: {weather}. Choose new weather:",
+    "edit_location_prompt": "Current location: {location}. Choose a new location:",
+    "edit_events_prompt": "Current events:\n{events}.\n\nDescribe new events of the day (or press 'Skip'):",
+    
+    "events_replace_prompt": "Current events:\n\"{events}\"\n\nEnter new text that will completely replace the current one:",
+    "events_append_prompt": "Current events:\n\"{events}\"\n\nEnter text that will be added to the current one:",
+    "events_edit_prompt": "Current events:\n\"{events}\"\n\nEdit the text:",ng": "Hello!!",
+    "no_access": "You have no access to the bot. Your id is {user_id}. Contact the administrator.",
+    "choos    "edit_mood_prompt": "Current mood: {mood}. Choose a new mood:",
+    "edit_weather_prompt": "Current weather: {weather}. Choose new weather:",
+    "edit_location_prompt": "Current location: {location}. Choose a new location:",
+    "edit_events_prompt": "Current events:\n{events}.\n\nDescribe new events of the day (or press 'Skip'):",
+    
+    "events_replace_prompt": "Current events:\n\"{events}\"\n\nEnter new text that will completely replace the current one:",
+    "events_append_prompt": "Current events:\n\"{events}\"\n\nEnter text that will be added to the current one:",
+    "events_edit_prompt": "Current events:\n\"{events}\"\n\nEdit the text:", "Choose a language. Available languages:",
     "lang_not_supported": "Language with code {code} is not supported.",
     "lang_changed": "Language successfully changed to {lang_name}.",
 
@@ -48,7 +75,7 @@
     "core_reload_forbidden": "Reloading _core plugin is forbidden",
     "spec_create_failed": "Failed to create spec for {path}",
     "no_loader_for": "No loader for {name}",
-    "plugin_no_tlgbot": "Plugin {name} lacks \"tlgbot\" reference",
+    "plugin_no_tlgbot": "Plugin {name} lacks 'tlgbot' reference",
     "plugin_loaded": "Plugin {name} loaded successfully",
     "plugin_import_error": "Import error for plugin {name}: {error}",
     "plugin_syntax_error": "Syntax error in plugin {name}: {error}",
@@ -138,13 +165,13 @@
     "not_specified": "Not specified",
     
     "edit_mood_prompt": "Current mood: {mood}. Choose a new mood:",
-    "edit_weather_prompt": "Current weather: {weather}. Choose new weather:",
+    "edit_weather_prompt": "Current weather: {weather}. Choose a new weather:",
     "edit_location_prompt": "Current location: {location}. Choose a new location:",
-    "edit_events_prompt": "Current events:\n{events}.\n\nDescribe new events of the day (or click 'Skip'):",
+    "edit_events_prompt": "Current events: {events}.\n\nDescribe new events of the day (or click 'Skip'):",
     
-    "events_replace_prompt": "Current events:\n\"{events}\"\n\nEnter new text to completely replace current one:",
-    "events_append_prompt": "Current events:\n\"{events}\"\n\nEnter text to append to current one:",
-    "events_edit_prompt": "Current events:\n\"{events}\"\n\nEdit the text:",
+    "events_replace_prompt": "Current events: \"{events}\"\n\nEnter new text to completely replace current one:",
+    "events_append_prompt": "Current events: \"{events}\"\n\nEnter text to append to current one:",
+    "events_edit_prompt": "Current events: \"{events}\"\n\nEdit the text:",
     
     "entry_title": "📝 Entry from {date}",
     "entry_mood": "🙂 Mood: {mood}",
