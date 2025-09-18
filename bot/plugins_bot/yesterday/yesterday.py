@@ -413,6 +413,9 @@ async def yesterday_events_callback_handler(event):
     if choice == "replace":
         current_events = user_form_data[user_id].get("events") or ""
         
+        # Устанавливаем флаг режима замены
+        user_form_data[user_id]["replace_mode"] = True
+        
         # Отладочное сообщение
         print(f"DEBUG: Replace button clicked. User ID: {user_id}, Current events: {current_events}")
         
@@ -425,6 +428,9 @@ async def yesterday_events_callback_handler(event):
     elif choice == "append":
         current_events = user_form_data[user_id].get("events") or ""
         
+        # Устанавливаем флаг режима добавления
+        user_form_data[user_id]["append_mode"] = True
+        
         append_message = f"Вчерашние события:\n\"{current_events}\"\n\nВведите текст, который будет добавлен к текущему:"
             
         await event.edit(append_message)
@@ -433,6 +439,9 @@ async def yesterday_events_callback_handler(event):
         
     elif choice == "edit":
         current_events = user_form_data[user_id].get("events") or ""
+        
+        # Устанавливаем флаг режима редактирования текста
+        user_form_data[user_id]["edit_text_mode"] = True
         
         # Отладочное сообщение
         print(f"DEBUG: Edit button clicked. User ID: {user_id}, Current events: {current_events}")
@@ -616,6 +625,7 @@ async def yesterday_handle_manual_input(event):
         elif append_mode:
             # Добавляем текст к существующему
             current_events = user_form_data[user_id].get("events", "")
+            print(f"DEBUG: Append mode. User ID: {user_id}, Current events: '{current_events}', New text: '{event.text}'")
             user_form_data[user_id]["events"] = f"{current_events}\n{event.text}" if current_events else event.text
             user_form_data[user_id]["append_mode"] = False
         elif edit_text_mode:
