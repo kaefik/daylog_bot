@@ -256,7 +256,19 @@ class DatabaseManager:
                 ''', (user_id, entry_date))
                 
                 row = cursor.fetchone()
-                return dict(row) if row else None
+                
+                if row:
+                    # Преобразуем в словарь
+                    entry = dict(row)
+                    
+                    # Убедимся, что все необходимые поля присутствуют
+                    required_fields = ["mood", "weather", "location", "events"]
+                    for field in required_fields:
+                        if field not in entry or entry[field] is None:
+                            entry[field] = ""
+                    
+                    return entry
+                return None
                 
         except sqlite3.Error as e:
             logger.error(f"Ошибка получения записи {entry_date}: {e}")

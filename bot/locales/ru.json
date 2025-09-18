@@ -90,8 +90,11 @@
     "db_diary_exists": "База данных дневника уже существует.",
     "diary_user_required": "Вы не зарегистрированы в дневнике. Пожалуйста, сначала выполните команду /start.",
     "today_entry_exists": "Запись за сегодня уже существует.",
+    "today_entry_exists_edit": "Запись за сегодня уже существует. Хотите отредактировать её?",
     "today_entry_created": "Создана новая запись за сегодня.",
+    "today_entry_updated": "Запись за сегодня успешно обновлена!",
     "today_entry_error": "Ошибка при создании записи.",
+    "today_entry_update_error": "Ошибка обновления записи.",
     "db_manager_import_error": "Ошибка импорта DatabaseManager.",
     "db_path_import_error": "Ошибка импорта DAYLOG_DB_PATH из config_tlg.",
     "diary_user_already_exists": "Вы уже зарегистрированы в дневнике!",
@@ -124,5 +127,16 @@
     "btn_manual": "Ввести вручную",
     
     "form_invalid_state": "Неверное состояние формы",
-    "form_first_step": "Это первый шаг"
+    "form_first_step": "Это первый шаг",
+    
+    "btn_edit": "Редактировать",
+    "btn_cancel": "Отмена",
+    "edit_canceled": "Редактирование отменено.",
+    "entry_not_found": "Запись не найдена.",
+    "not_specified": "Не указано",
+    
+    "edit_mood_prompt": "Текущее настроение: {mood}. Выберите новое настроение:",
+    "edit_weather_prompt": "Текущая погода: {weather}. Выберите новую погоду:",
+    "edit_location_prompt": "Текущее местоположение: {location}. Выберите новое местоположение:",
+    "edit_events_prompt": "Текущие события: {events}. Опишите новые события дня (или нажмите 'Пропустить'):"
 }
