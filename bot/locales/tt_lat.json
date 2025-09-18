@@ -137,9 +137,9 @@
     "entry_not_found": "Yazma tabılmadı.",
     "not_specified": "Kürsätelmägän",
     
-    "edit_mood_prompt": "Xäzerge käyef: {mood}. Yaña käyef saylağız:",
-    "edit_weather_prompt": "Xäzerge hava torışı: {weather}. Yaña hava torışı saylağız:",
-    "edit_location_prompt": "Xäzerge urınlaşu: {location}. Yaña urınlaşu saylağız:",
+    "edit_mood_prompt": "Xäzerge käyef:\n\n{mood}\n\nYaña käyef saylağız:",
+    "edit_weather_prompt": "Xäzerge hava torışı:\n\n{weather}\n\nYaña hava torışı saylağız:",
+    "edit_location_prompt": "Xäzerge urınlaşu:\n\n{location}\n\nYaña urınlaşu saylağız:",
     "edit_events_prompt": "Xäzerge vaqıyğalar:\n{events}.\n\nYaña kön vaqıyğaların tasvirlağız (yäki 'Töşerep qaldıru' töymäsenä basıgız):",
     
     "events_replace_prompt": "Xäzerge vaqıyğalar:\n\"{events}\"\n\nXäzerge tekstnı tulısınça almaştıraçaq yaña tekst kertegez:",

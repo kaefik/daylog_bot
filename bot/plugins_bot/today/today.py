@@ -234,7 +234,7 @@ async def mood_callback_handler(event):
         # Исправляем вызов метода локализации, передавая параметр weather напрямую
         edit_weather_message = tlgbot.i18n.t('edit_weather_prompt', lang=lang, weather=current_weather)
         if not edit_weather_message:
-            edit_weather_message = f"Текущая погода: {current_weather}. Выберите новую погоду:"
+            edit_weather_message = f"Текущая погода:\n\n{current_weather}\n\nВыберите новую погоду:"
             
         await event.edit(
             edit_weather_message,
@@ -267,7 +267,7 @@ async def weather_callback_handler(event):
         if user_form_data[user_id].get("edit_mode"):
             current_mood = user_form_data[user_id].get("mood") or tlgbot.i18n.t('not_specified', lang=lang) or "Не указано"
             await event.edit(
-                (tlgbot.i18n.t('edit_mood_prompt', lang=lang) or "Текущее настроение: {mood}. Выберите новое настроение:").format(mood=current_mood),
+                (tlgbot.i18n.t('edit_mood_prompt', lang=lang) or "Текущее настроение:\n\n{mood}\n\nВыберите новое настроение:").format(mood=current_mood),
                 buttons=get_mood_keyboard(lang)
             )
         else:
@@ -309,7 +309,7 @@ async def weather_callback_handler(event):
         # Исправляем вызов метода локализации, передавая параметр location напрямую
         edit_location_message = tlgbot.i18n.t('edit_location_prompt', lang=lang, location=current_location)
         if not edit_location_message:
-            edit_location_message = f"Текущее местоположение: {current_location}. Выберите новое местоположение:"
+            edit_location_message = f"Текущее местоположение:\n\n{current_location}\n\nВыберите новое местоположение:"
             
         await event.edit(
             edit_location_message,
@@ -345,7 +345,7 @@ async def location_callback_handler(event):
             # Исправляем вызов метода локализации, передавая параметр weather напрямую
             edit_weather_message = tlgbot.i18n.t('edit_weather_prompt', lang=lang, weather=current_weather)
             if not edit_weather_message:
-                edit_weather_message = f"Текущая погода: {current_weather}. Выберите новую погоду:"
+                edit_weather_message = f"Текущая погода:\n\n{current_weather}\n\nВыберите новую погоду:"
                 
             await event.edit(
                 edit_weather_message,
@@ -433,7 +433,7 @@ async def events_callback_handler(event):
             # Исправляем вызов метода локализации, передавая параметр location напрямую
             edit_location_message = tlgbot.i18n.t('edit_location_prompt', lang=lang, location=current_location)
             if not edit_location_message:
-                edit_location_message = f"Текущее местоположение: {current_location}. Выберите новое местоположение:"
+                edit_location_message = f"Текущее местоположение:\n\n{current_location}\n\nВыберите новое местоположение:"
                 
             await event.edit(
                 edit_location_message,
@@ -615,7 +615,7 @@ async def handle_manual_input(event):
             # Исправляем вызов метода локализации, передавая параметр location напрямую
             edit_location_message = tlgbot.i18n.t('edit_location_prompt', lang=lang, location=current_location)
             if not edit_location_message:
-                edit_location_message = f"Текущее местоположение: {current_location}. Выберите новое местоположение:"
+                edit_location_message = f"Текущее местоположение:\n\n{current_location}\n\nВыберите новое местоположение:"
                 
             await event.reply(
                 edit_location_message,
@@ -842,7 +842,7 @@ async def edit_today_handler(event):
         # Исправляем вызов метода локализации, передавая параметр mood напрямую
         edit_mood_message = tlgbot.i18n.t('edit_mood_prompt', lang=lang, mood=current_mood)
         if not edit_mood_message:
-            edit_mood_message = f"Текущее настроение: {current_mood}. Выберите новое настроение:"
+            edit_mood_message = f"Текущее настроение:\n\n{current_mood}\n\nВыберите новое настроение:"
             
         await event.edit(
             edit_mood_message,

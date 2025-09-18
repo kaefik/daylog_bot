@@ -139,9 +139,9 @@
     "entry_not_found": "Язма табылмады.",
     "not_specified": "Күрсәтелмәгән",
     
-    "edit_mood_prompt": "Хәзерге кәеф: {mood}. Яңа кәеф сайлагыз:",
-    "edit_weather_prompt": "Хәзерге һава торышы: {weather}. Яңа һава торышы сайлагыз:",
-    "edit_location_prompt": "Хәзерге урынлашу: {location}. Яңа урынлашу сайлагыз:",
+    "edit_mood_prompt": "Хәзерге кәеф:\n\n{mood}\n\nЯңа кәеф сайлагыз:",
+    "edit_weather_prompt": "Хәзерге һава торышы:\n\n{weather}\n\nЯңа һава торышы сайлагыз:",
+    "edit_location_prompt": "Хәзерге урынлашу:\n\n{location}\n\nЯңа урынлашу сайлагыз:",
     "edit_events_prompt": "Хәзерге вакыйгалар:\n{events}.\n\nЯңа көн вакыйгаларын тасвирлагыз (яки 'Төшереп калдыру' төймәсенә басыгыз):",
     
     "events_replace_prompt": "Агымдагы вакыйгалар:\n\"{events}\"\n\nХәзерге текстны алмаштыру өчен яңа текст кертегез:",

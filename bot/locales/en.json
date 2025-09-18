@@ -137,9 +137,9 @@
     "entry_not_found": "Entry not found.",
     "not_specified": "Not specified",
     
-    "edit_mood_prompt": "Current mood: {mood}. Choose a new mood:",
-    "edit_weather_prompt": "Current weather: {weather}. Choose new weather:",
-    "edit_location_prompt": "Current location: {location}. Choose a new location:",
+    "edit_mood_prompt": "Current mood:\n\n{mood}\n\nChoose a new mood:",
+    "edit_weather_prompt": "Current weather:\n\n{weather}\n\nChoose new weather:",
+    "edit_location_prompt": "Current location:\n\n{location}\n\nChoose a new location:",
     "edit_events_prompt": "Current events:\n{events}.\n\nDescribe new events of the day (or click 'Skip'):",
     
     "events_replace_prompt": "Current events:\n\"{events}\"\n\nEnter new text to completely replace current one:",
