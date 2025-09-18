@@ -125,6 +125,8 @@
     "btn_skip": "Töşerep qaldıru",
     "btn_back": "Kire",
     "btn_manual": "Qul belän kertü",
+    "btn_replace": "Tekstnı almaştıru",
+    "btn_append": "Tekstqa östäü",
     
     "form_invalid_state": "Formanıñ döres bulmağan torışı",
     "form_first_step": "Bu berenche adım",
@@ -139,6 +141,9 @@
     "edit_weather_prompt": "Xäzerge hava torışı: {weather}. Yaña hava torışı saylağız:",
     "edit_location_prompt": "Xäzerge urınlaşu: {location}. Yaña urınlaşu saylağız:",
     "edit_events_prompt": "Xäzerge vaqıyğalar: {events}. Yaña kön vaqıyğaların tasvirlağız (yäki 'Töşerep qaldıru' töymäsenä basıgız):",
+    
+    "events_replace_prompt": "Xäzerge vaqıyğalar: \"{events}\"\nXäzerge tekstnı tulısınça almaştıraçaq yaña tekst kertegez:",
+    "events_append_prompt": "Xäzerge vaqıyğalar: \"{events}\"\nXäzerge tekstqa östäläçäk tekstnı kertegez:",
     
     "entry_title": "📝 {date} yazması",
     "entry_mood": "🙂 Käyef: {mood}",

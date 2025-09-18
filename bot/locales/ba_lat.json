@@ -125,6 +125,8 @@
     "btn_skip": "Töşöröp qaldırıu",
     "btn_back": "Kire",
     "btn_manual": "Qul menän indereü",
+    "btn_replace": "Tekstı almaştırıu",
+    "btn_append": "Tekstqa östäü",
     
     "form_invalid_state": "Formanıñ dörös bulmağan toroşo",
     "form_first_step": "Bıl täüge azım",
@@ -139,6 +141,9 @@
     "edit_weather_prompt": "Xäzerge hawa toroşo: {weather}. Yañı hawa toroşo haylağız:",
     "edit_location_prompt": "Xäzerge urınlaşıu: {location}. Yañı urınlaşıu haylağız:",
     "edit_events_prompt": "Xäzerge waqiğalar: {events}. Yañı kön waqiğaların tasuirlağız (yäki 'Töşöröp qaldırıu' töymähena bahığız):",
+    
+    "events_replace_prompt": "Xäzerge waqiğalar: \"{events}\"\nXäzerge tekstı tulıhınsa almaştırasaq yañı tekst inderegez:",
+    "events_append_prompt": "Xäzerge waqiğalar: \"{events}\"\nXäzerge tekstqa östäläsäk tekstı inderegez:",
     
     "entry_title": "📝 {date} yazmahı",
     "entry_mood": "🙂 Käyef: {mood}",

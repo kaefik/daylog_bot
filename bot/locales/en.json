@@ -123,6 +123,8 @@
     "btn_skip": "Skip",
     "btn_back": "Back",
     "btn_manual": "Enter manually",
+    "btn_replace": "Replace text",
+    "btn_append": "Add to text",
     
     "form_invalid_state": "Invalid form state",
     "form_first_step": "This is the first step",
@@ -137,6 +139,9 @@
     "edit_weather_prompt": "Current weather: {weather}. Choose a new weather:",
     "edit_location_prompt": "Current location: {location}. Choose a new location:",
     "edit_events_prompt": "Current events: {events}. Describe new events of the day (or click 'Skip'):",
+    
+    "events_replace_prompt": "Current events: \"{events}\"\nEnter new text that will completely replace the current one:",
+    "events_append_prompt": "Current events: \"{events}\"\nEnter text that will be added to the current one:",
     
     "entry_title": "📝 Entry from {date}",
     "entry_mood": "🙂 Mood: {mood}",

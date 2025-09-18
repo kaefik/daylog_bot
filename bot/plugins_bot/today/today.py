@@ -110,13 +110,24 @@ def get_location_keyboard(lang="ru"):
         ]
     ]
 
-def get_events_keyboard(lang="ru"):
-    return [
+def get_events_keyboard(lang="ru", edit_mode=False):
+    buttons = [
         [
-            Button.inline(tlgbot.i18n.t('btn_skip', lang=lang) or "Пропустить", data=f"events_skip"),
-            Button.inline(tlgbot.i18n.t('btn_back', lang=lang) or "Назад", data=f"events_back"),
+            Button.inline(tlgbot.i18n.t('btn_skip', lang=lang) or "Пропустить", data="events_skip"),
+            Button.inline(tlgbot.i18n.t('btn_back', lang=lang) or "Назад", data="events_back"),
         ]
     ]
+    
+    # Если в режиме редактирования, добавляем кнопки "Заменить" и "Добавить"
+    if edit_mode:
+        # Отладочное сообщение при создании кнопок
+        print(f"DEBUG: Creating edit mode buttons with data: events_replace and events_append")
+        
+        replace_btn = Button.inline(tlgbot.i18n.t('btn_replace', lang=lang) or "Заменить текст", data="events_replace")
+        append_btn = Button.inline(tlgbot.i18n.t('btn_append', lang=lang) or "Добавить к тексту", data="events_append")
+        buttons.insert(0, [replace_btn, append_btn])
+        
+    return buttons
 
 @tlgbot.on(tlgbot.cmd('today'))
 @require_diary_user
@@ -176,7 +187,7 @@ async def today_handler(event):
     )
 
 # Обработчики для инлайн-кнопок формы
-@tlgbot.on(events.CallbackQuery(pattern=b"mood_.*"))
+@tlgbot.on(events.CallbackQuery(pattern="mood_.*"))
 async def mood_callback_handler(event):
     user_id = event.sender_id
     user = getattr(tlgbot, 'settings', None).get_user(user_id) if getattr(tlgbot, 'settings', None) else None
@@ -233,7 +244,7 @@ async def mood_callback_handler(event):
             buttons=get_weather_keyboard(lang)
         )
 
-@tlgbot.on(events.CallbackQuery(pattern=b"weather_.*"))
+@tlgbot.on(events.CallbackQuery(pattern="weather_.*"))
 async def weather_callback_handler(event):
     user_id = event.sender_id
     user = getattr(tlgbot, 'settings', None).get_user(user_id) if getattr(tlgbot, 'settings', None) else None
@@ -308,7 +319,7 @@ async def weather_callback_handler(event):
             buttons=get_location_keyboard(lang)
         )
 
-@tlgbot.on(events.CallbackQuery(pattern=b"location_.*"))
+@tlgbot.on(events.CallbackQuery(pattern="location_.*"))
 async def location_callback_handler(event):
     user_id = event.sender_id
     user = getattr(tlgbot, 'settings', None).get_user(user_id) if getattr(tlgbot, 'settings', None) else None
@@ -363,6 +374,9 @@ async def location_callback_handler(event):
     # Переходим к следующему шагу - события
     user_states[user_id] = FormState.WAITING_EVENTS
     
+        # Переходим к следующему шагу - события
+    user_states[user_id] = FormState.WAITING_EVENTS
+    
     # Для режима редактирования показываем текущее значение
     if user_form_data[user_id].get("edit_mode"):
         # Безопасно получаем текущее значение событий
@@ -372,6 +386,9 @@ async def location_callback_handler(event):
         else:
             current_events = tlgbot.i18n.t('not_specified', lang=lang) or "Не указано"
             
+        # Отладочное сообщение
+        print(f"DEBUG: Showing events form with edit_mode=True in location_callback. User ID: {user_id}, Current events: {current_events}")
+            
         # Исправляем вызов метода локализации, передавая параметр events напрямую
         edit_events_message = tlgbot.i18n.t('edit_events_prompt', lang=lang, events=current_events)
         if not edit_events_message:
@@ -379,15 +396,15 @@ async def location_callback_handler(event):
             
         await event.edit(
             edit_events_message,
-            buttons=get_events_keyboard(lang)
+            buttons=get_events_keyboard(lang, edit_mode=True)
         )
     else:
         await event.edit(
             tlgbot.i18n.t('today_events_prompt', lang=lang) or "Опишите события дня (или нажмите 'Пропустить'):",
-            buttons=get_events_keyboard(lang)
+            buttons=get_events_keyboard(lang, edit_mode=False)
         )
 
-@tlgbot.on(events.CallbackQuery(pattern=b"events_.*"))
+@tlgbot.on(events.CallbackQuery(pattern="events_.*"))
 async def events_callback_handler(event):
     user_id = event.sender_id
     user = getattr(tlgbot, 'settings', None).get_user(user_id) if getattr(tlgbot, 'settings', None) else None
@@ -399,6 +416,9 @@ async def events_callback_handler(event):
     
     data = event.data.decode("utf-8")
     choice = data.split("_")[1]
+    
+    # Отладочное сообщение для всех кнопок
+    print(f"DEBUG: Events callback handler called. User ID: {user_id}, Choice: {choice}, Data: {data}, Raw data: {event.data}")
     
     if choice == "back":
         # Возвращаемся к предыдущему шагу - местоположение
@@ -422,6 +442,37 @@ async def events_callback_handler(event):
                 tlgbot.i18n.t('today_location_prompt', lang=lang) or "Где вы находитесь?",
                 buttons=get_location_keyboard(lang)
             )
+        return
+    
+    # Новые обработчики для режима редактирования
+    if choice == "replace":
+        print(f"DEBUG: REPLACE button was clicked! User ID: {user_id}")
+        # Устанавливаем флаг режима замены
+        user_form_data[user_id]["events_mode"] = "replace"
+        current_events = user_form_data[user_id].get("events") or ""
+        
+        # Отладочное сообщение
+        print(f"DEBUG: Replace button clicked. User ID: {user_id}, Current events: {current_events}")
+        
+        replace_message = tlgbot.i18n.t('events_replace_prompt', lang=lang, events=current_events)
+        if not replace_message:
+            replace_message = f"Текущие события: \"{current_events}\"\nВведите новый текст, который полностью заменит текущий:"
+            
+        await event.edit(replace_message)
+        # Ожидаем ввод пользователя, который будет обработан в handle_manual_input
+        return
+        
+    elif choice == "append":
+        # Устанавливаем флаг режима добавления
+        user_form_data[user_id]["events_mode"] = "append"
+        current_events = user_form_data[user_id].get("events") or ""
+        
+        append_message = tlgbot.i18n.t('events_append_prompt', lang=lang, events=current_events)
+        if not append_message:
+            append_message = f"Текущие события: \"{current_events}\"\nВведите текст, который будет добавлен к текущему:"
+            
+        await event.edit(append_message)
+        # Ожидаем ввод пользователя, который будет обработан в handle_manual_input
         return
     
     if choice != "skip":
@@ -564,6 +615,9 @@ async def handle_manual_input(event):
         if edit_mode:
             current_events = user_form_data[user_id].get("events") or tlgbot.i18n.t('not_specified', lang=lang) or "Не указано"
             
+            # Отладочное сообщение
+            print(f"DEBUG: Showing events edit form with edit_mode=True. User ID: {user_id}, Current events: {current_events}")
+            
             # Исправляем вызов метода локализации, передавая параметр events напрямую
             edit_events_message = tlgbot.i18n.t('edit_events_prompt', lang=lang, events=current_events)
             if not edit_events_message:
@@ -571,19 +625,31 @@ async def handle_manual_input(event):
                 
             await event.reply(
                 edit_events_message,
-                buttons=get_events_keyboard(lang)
+                buttons=get_events_keyboard(lang, edit_mode=True)
             )
         else:
             await event.reply(
                 tlgbot.i18n.t('today_events_prompt', lang=lang) or "Опишите события дня (или нажмите 'Пропустить'):",
-                buttons=get_events_keyboard(lang)
+                buttons=get_events_keyboard(lang, edit_mode=False)
             )
         return
         
     # Если мы ожидаем ввод событий
     elif current_state == FormState.WAITING_EVENTS:
-        # Сохраняем введенные события
-        user_form_data[user_id]["events"] = text
+        # Проверяем режим редактирования событий
+        events_mode = user_form_data[user_id].get("events_mode", "replace")
+        
+        if events_mode == "append" and "events" in user_form_data[user_id] and user_form_data[user_id]["events"]:
+            # Добавляем текст к существующему
+            current_events = user_form_data[user_id]["events"]
+            user_form_data[user_id]["events"] = current_events + "\n" + text
+        else:
+            # Заменяем текст или создаем новый
+            user_form_data[user_id]["events"] = text
+            
+        # Удаляем флаг режима редактирования событий, если он есть
+        if "events_mode" in user_form_data[user_id]:
+            del user_form_data[user_id]["events_mode"]
         
         # Завершаем заполнение формы и сохраняем данные
         try:
@@ -651,7 +717,7 @@ async def handle_manual_input(event):
             await event.reply(f"Ошибка: {str(e)}")
 
 # Обработчик для кнопок редактирования существующей записи
-@tlgbot.on(events.CallbackQuery(pattern=b"edit_today|cancel_edit"))
+@tlgbot.on(events.CallbackQuery(pattern="edit_today|cancel_edit"))
 async def edit_today_handler(event):
     user_id = event.sender_id
     user = getattr(tlgbot, 'settings', None).get_user(user_id) if getattr(tlgbot, 'settings', None) else None
