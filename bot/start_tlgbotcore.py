@@ -1,9 +1,10 @@
 from cfg import config_tlg as config
 from bot.tlgbotcore.di_container import DIContainer, BotFactory, IConfig, ISettingsStorage
 from bot.tlgbotcore.storage_factory import StorageFactory
-from bot.tlgbotcore.logging_config import setup_prod_logging
+from bot.tlgbotcore.logging_config import setup_logging
 from bot.tlgbotcore.i18n import I18n
 import asyncio
+import logging
 
 
 class ConfigAdapter:
@@ -53,7 +54,26 @@ async def _main_async():
 
 
 def main():
-    setup_prod_logging()
+    # Определяем уровень логирования из конфигурации
+    log_levels = {
+        "DEBUG": logging.DEBUG,
+        "INFO": logging.INFO,
+        "WARNING": logging.WARNING,
+        "ERROR": logging.ERROR,
+        "CRITICAL": logging.CRITICAL
+    }
+    
+    # Получаем уровень из конфига, с проверкой наличия и значения по умолчанию
+    log_level_str = getattr(config, "LOG_LEVEL", "INFO")
+    log_level = log_levels.get(log_level_str, logging.INFO)
+    
+    # Используем универсальную функцию setup_logging с параметрами из конфига
+    setup_logging(
+        level=log_level,
+        log_file="logs/tlgbotcore.log",
+        enable_debug=(log_level == logging.DEBUG)
+    )
+    
     asyncio.run(_main_async())
 
 
