@@ -419,7 +419,9 @@ async def yesterday_events_callback_handler(event):
         # Отладочное сообщение
         print(f"DEBUG: Replace button clicked. User ID: {user_id}, Current events: {current_events}")
         
-        replace_message = f"Вчерашние события:\n\"{current_events}\"\n\nВведите новый текст, который полностью заменит текущий:"
+        replace_message = tlgbot.i18n.t('events_replace_prompt', lang=lang, events=current_events)
+        if not replace_message:
+            replace_message = f"Вчерашние события:\n\"{current_events}\"\n\nВведите новый текст, который полностью заменит текущий:"
             
         await event.edit(replace_message)
         # Ожидаем ввод пользователя, который будет обработан в handle_manual_input
@@ -431,7 +433,9 @@ async def yesterday_events_callback_handler(event):
         # Устанавливаем флаг режима добавления
         user_form_data[user_id]["append_mode"] = True
         
-        append_message = f"Вчерашние события:\n\"{current_events}\"\n\nВведите текст, который будет добавлен к текущему:"
+        append_message = tlgbot.i18n.t('events_append_prompt', lang=lang, events=current_events)
+        if not append_message:
+            append_message = f"Вчерашние события:\n\"{current_events}\"\n\nВведите текст, который будет добавлен к текущему:"
             
         await event.edit(append_message)
         # Ожидаем ввод пользователя, который будет обработан в handle_manual_input
@@ -446,9 +450,15 @@ async def yesterday_events_callback_handler(event):
         # Отладочное сообщение
         print(f"DEBUG: Edit button clicked. User ID: {user_id}, Current events: {current_events}")
         
-        edit_message = f"Вчерашние события:\n\"{current_events}\"\n\nОтредактируйте текст:"
+        edit_message = tlgbot.i18n.t('events_edit_prompt', lang=lang, events=current_events)
+        if not edit_message:
+            edit_message = f"Вчерашние события:\n\"{current_events}\"\n\nОтредактируйте текст:"
             
         await event.edit(edit_message)
+        
+        # Отправляем второе сообщение только с текстом событий, чтобы пользователю было легче скопировать
+        await event.respond(current_events)
+        
         # Ожидаем ввод пользователя, который будет обработан в handle_manual_input
         return
     
