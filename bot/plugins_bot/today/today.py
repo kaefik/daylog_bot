@@ -8,6 +8,8 @@ from bot.require_diary_user import require_diary_user
 
 # tlgbot глобально доступен в плагинах через динамическую загрузку
 tlgbot = globals().get('tlgbot')
+# Логгер доступен через глобальные переменные
+logger = globals().get('logger')
 
 # Определяем состояния FSM
 class FormState(str, Enum):
@@ -52,7 +54,7 @@ async def display_entry_content(event, user_id, entry_date, lang="ru"):
     except Exception as e:
         import traceback
         traceback_str = traceback.format_exc()
-        print(f"ERROR displaying entry: {traceback_str}")
+        logger.error(f"Error displaying entry: {traceback_str}")
         await event.respond(f"Ошибка при отображении записи: {str(e)}")
 
 # Inline-клавиатуры для каждого поля
@@ -121,7 +123,7 @@ def get_events_keyboard(lang="ru", edit_mode=False):
     # Если в режиме редактирования, добавляем кнопки "Заменить", "Добавить" и "Правка"
     if edit_mode:
         # Отладочное сообщение при создании кнопок
-        print(f"DEBUG: Creating edit mode buttons with data: events_replace, events_append and events_edit")
+        logger.debug(f"Creating edit mode buttons with data: events_replace, events_append and events_edit")
         
         replace_btn = Button.inline(tlgbot.i18n.t('btn_replace', lang=lang) or "Заменить текст", data="events_replace")
         append_btn = Button.inline(tlgbot.i18n.t('btn_append', lang=lang) or "Добавить к тексту", data="events_append")
@@ -153,14 +155,14 @@ async def today_handler(event):
     entry = db.get_diary_entry(user_id, today)
     
     # Добавляем отладочную информацию
-    print(f"DEBUG: Entry from DB for today command: {entry}")
+    logger.debug(f"Entry from DB for today command: {entry}")
     
     if entry:
         # Проверяем, содержит ли запись все необходимые поля
         required_fields = ["mood", "weather", "location", "events"]
         for field in required_fields:
             if field not in entry:
-                print(f"WARNING: Missing field '{field}' in entry from DB")
+                logger.warning(f"Missing field '{field}' in entry from DB")
                 # Инициализируем отсутствующие поля
                 entry[field] = None
     
@@ -389,7 +391,7 @@ async def location_callback_handler(event):
             current_events = tlgbot.i18n.t('not_specified', lang=lang) or "Не указано"
             
         # Отладочное сообщение
-        print(f"DEBUG: Showing events form with edit_mode=True in location_callback. User ID: {user_id}, Current events: {current_events}")
+        logger.debug(f"Showing events form with edit_mode=True in location_callback. User ID: {user_id}, Current events: {current_events}")
             
         # Исправляем вызов метода локализации, передавая параметр events напрямую
         edit_events_message = tlgbot.i18n.t('edit_events_prompt', lang=lang, events=current_events)
@@ -420,7 +422,7 @@ async def events_callback_handler(event):
     choice = data.split("_")[1]
     
     # Отладочное сообщение для всех кнопок
-    print(f"DEBUG: Events callback handler called. User ID: {user_id}, Choice: {choice}, Data: {data}, Raw data: {event.data}")
+    logger.debug(f"Events callback handler called. User ID: {user_id}, Choice: {choice}, Data: {data}, Raw data: {event.data}")
     
     if choice == "back":
         # Возвращаемся к предыдущему шагу - местоположение
@@ -448,13 +450,13 @@ async def events_callback_handler(event):
     
     # Новые обработчики для режима редактирования
     if choice == "replace":
-        print(f"DEBUG: REPLACE button was clicked! User ID: {user_id}")
+        logger.debug(f"REPLACE button was clicked! User ID: {user_id}")
         # Устанавливаем флаг режима замены
         user_form_data[user_id]["events_mode"] = "replace"
         current_events = user_form_data[user_id].get("events") or ""
         
         # Отладочное сообщение
-        print(f"DEBUG: Replace button clicked. User ID: {user_id}, Current events: {current_events}")
+        logger.debug(f"Replace button clicked. User ID: {user_id}, Current events: {current_events}")
         
         replace_message = tlgbot.i18n.t('events_replace_prompt', lang=lang, events=current_events)
         if not replace_message:
@@ -483,7 +485,7 @@ async def events_callback_handler(event):
         current_events = user_form_data[user_id].get("events") or ""
         
         # Отладочное сообщение
-        print(f"DEBUG: Edit button clicked. User ID: {user_id}, Current events: {current_events}")
+        logger.debug(f"Edit button clicked. User ID: {user_id}, Current events: {current_events}")
         
         edit_message = tlgbot.i18n.t('events_edit_prompt', lang=lang, events=current_events)
         if not edit_message:
@@ -530,7 +532,7 @@ async def events_callback_handler(event):
         }
         
         # Отладочная информация
-        print(f"DEBUG: Saving data: {entry_data}, edit_mode: {edit_mode}")
+        logger.debug(f"Saving data: {entry_data}, edit_mode: {edit_mode}")
         
         if edit_mode:
             # Обновляем существующую запись
@@ -573,7 +575,7 @@ async def events_callback_handler(event):
     except Exception as e:
         import traceback
         traceback_str = traceback.format_exc()
-        print(f"ERROR: {traceback_str}")
+        logger.error(f"{traceback_str}")
         await event.edit(f"Ошибка: {str(e)}")
 
 # Обработчик для ручного ввода текста (для полей с опцией "Ввести вручную")
@@ -643,7 +645,7 @@ async def handle_manual_input(event):
             current_events = user_form_data[user_id].get("events") or tlgbot.i18n.t('not_specified', lang=lang) or "Не указано"
             
             # Отладочное сообщение
-            print(f"DEBUG: Showing events edit form with edit_mode=True. User ID: {user_id}, Current events: {current_events}")
+            logger.debug(f"Showing events edit form with edit_mode=True. User ID: {user_id}, Current events: {current_events}")
             
             # Исправляем вызов метода локализации, передавая параметр events напрямую
             edit_events_message = tlgbot.i18n.t('edit_events_prompt', lang=lang, events=current_events)
@@ -703,7 +705,7 @@ async def handle_manual_input(event):
             }
             
             # Отладочная информация
-            print(f"DEBUG: Saving data from text input: {entry_data}, edit_mode: {edit_mode}")
+            logger.debug(f"Saving data from text input: {entry_data}, edit_mode: {edit_mode}")
             
             if edit_mode:
                 # Обновляем существующую запись
@@ -771,7 +773,7 @@ async def edit_today_handler(event):
         
         # Получаем текущую запись и сохраняем ее данные
         entry = db.get_diary_entry(user_id, today)
-        print(f"DEBUG: Entry data for editing (raw): {entry}")
+        logger.debug(f"Entry data for editing (raw): {entry}")
         
         if not entry:
             await event.edit(tlgbot.i18n.t('entry_not_found', lang=lang) or "Запись не найдена.")
@@ -782,10 +784,10 @@ async def edit_today_handler(event):
         missing_fields = [field for field in required_fields if field not in entry]
         
         if missing_fields:
-            print(f"WARNING: Missing fields in entry: {missing_fields}")
+            logger.warning(f"Missing fields in entry: {missing_fields}")
         
         # Выводим информацию о записи в лог для отладки
-        print(f"DEBUG: Entry data for edit: {entry}")
+        logger.debug(f"Entry data for edit: {entry}")
         
         # Если это редактирование только событий
         if data == "edit_today_events":
@@ -851,5 +853,5 @@ async def edit_today_handler(event):
     except Exception as e:
         import traceback
         traceback_str = traceback.format_exc()
-        print(f"ERROR: {traceback_str}")
+        logger.error(f"{traceback_str}")
         await event.edit(f"Ошибка: {str(e)}")
