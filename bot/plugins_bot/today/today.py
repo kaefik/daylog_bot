@@ -118,14 +118,15 @@ def get_events_keyboard(lang="ru", edit_mode=False):
         ]
     ]
     
-    # Если в режиме редактирования, добавляем кнопки "Заменить" и "Добавить"
+    # Если в режиме редактирования, добавляем кнопки "Заменить", "Добавить" и "Правка"
     if edit_mode:
         # Отладочное сообщение при создании кнопок
-        print(f"DEBUG: Creating edit mode buttons with data: events_replace and events_append")
+        print(f"DEBUG: Creating edit mode buttons with data: events_replace, events_append and events_edit")
         
         replace_btn = Button.inline(tlgbot.i18n.t('btn_replace', lang=lang) or "Заменить текст", data="events_replace")
         append_btn = Button.inline(tlgbot.i18n.t('btn_append', lang=lang) or "Добавить к тексту", data="events_append")
-        buttons.insert(0, [replace_btn, append_btn])
+        edit_btn = Button.inline(tlgbot.i18n.t('btn_edit_text', lang=lang) or "Правка", data="events_edit")
+        buttons.insert(0, [replace_btn, append_btn, edit_btn])
         
     return buttons
 
@@ -474,6 +475,31 @@ async def events_callback_handler(event):
         await event.edit(append_message)
         # Ожидаем ввод пользователя, который будет обработан в handle_manual_input
         return
+        
+    elif choice == "edit":
+        # Устанавливаем флаг режима редактирования
+        user_form_data[user_id]["events_mode"] = "edit"
+        current_events = user_form_data[user_id].get("events") or ""
+        
+        # Отладочное сообщение
+        print(f"DEBUG: Edit button clicked. User ID: {user_id}, Current events: {current_events}")
+        
+        edit_message = tlgbot.i18n.t('events_edit_prompt', lang=lang, events=current_events)
+        if not edit_message:
+            edit_message = f"Текущие события: \"{current_events}\"\nОтредактируйте текст:"
+            
+        # Устанавливаем начальный текст для ввода пользователя
+        # В Telethon нельзя напрямую установить текст в поле ввода,
+        # поэтому мы просто показываем сообщение с текущим текстом,
+        # который пользователь может скопировать и отредактировать
+        
+        await event.edit(edit_message)
+        
+        # Отправляем второе сообщение только с текстом событий, чтобы пользователю было легче скопировать
+        await event.respond(current_events)
+        
+        # Ожидаем ввод пользователя, который будет обработан в handle_manual_input
+        return
     
     if choice != "skip":
         # Если пользователь не нажал "Пропустить", сохраняем текущие события
@@ -643,8 +669,11 @@ async def handle_manual_input(event):
             # Добавляем текст к существующему
             current_events = user_form_data[user_id]["events"]
             user_form_data[user_id]["events"] = current_events + "\n" + text
+        elif events_mode == "edit":
+            # Просто заменяем текст на введенный пользователем
+            user_form_data[user_id]["events"] = text
         else:
-            # Заменяем текст или создаем новый
+            # Заменяем текст или создаем новый (для режима "replace")
             user_form_data[user_id]["events"] = text
             
         # Удаляем флаг режима редактирования событий, если он есть
