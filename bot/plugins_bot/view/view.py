@@ -44,13 +44,19 @@ async def get_entry_by_date(user_id, entry_date):
     try:
         # Получаем экземпляр менеджера БД
         from core.database.manager import DatabaseManager
-        db_manager = DatabaseManager()
+        from cfg.config_tlg import DAYLOG_DB_PATH
         
-        # Преобразуем date в строку формата YYYY-MM-DD для запроса к БД
+        # Создаем экземпляр DB с явным указанием пути к БД (как в других плагинах)
+        db_manager = DatabaseManager(db_path=DAYLOG_DB_PATH)
+        
+        # Дополнительное логирование для отладки
+        logger.debug(f"Getting entry with user_id={user_id}, entry_date={entry_date}, type={type(entry_date)}")
+        
+        # Используем напрямую объект date для запроса к БД
+        entry = db_manager.get_diary_entry(user_id, entry_date)
+        
+        # Для отладки выведем информацию о полученной записи
         date_str = entry_date.strftime("%Y-%m-%d")
-        
-        # Запрос записи из БД
-        entry = db_manager.get_diary_entry(user_id, date_str)
         logger.debug(f"Поиск записи для пользователя {user_id} за дату {date_str}: {entry}")
         
         return entry
@@ -103,28 +109,41 @@ async def view_command_handler(event):
     lang = getattr(user, 'lang', None) or 'ru'
     
     try:
+        # Получаем экземпляр менеджера БД напрямую
+        from core.database.manager import DatabaseManager
+        from cfg.config_tlg import DAYLOG_DB_PATH
+        db = DatabaseManager(db_path=DAYLOG_DB_PATH)
+        
         # Получаем аргумент команды (дату)
         command_text = event.message.text.strip()
         parts = command_text.split(maxsplit=1)
+        
+        logger.debug(f"Command /view received: {command_text}")
         
         # Определяем дату для поиска
         target_date = None
         if len(parts) > 1 and parts[1]:
             # Пользователь указал дату
             date_str = parts[1].strip()
+            logger.debug(f"Parsing date string: {date_str}")
             target_date = await parse_date(date_str)
             
             if not target_date:
                 # Не удалось распарсить дату
+                logger.warning(f"Invalid date format: {date_str}")
                 error_msg = tlgbot.i18n.t('invalid_date_format', lang=lang) or f"Неверный формат даты. Используйте ДД.ММ.ГГГГ или ДД.ММ."
                 await event.respond(error_msg)
                 return
         else:
             # Дата не указана, используем текущую дату
             target_date = date.today()
+            logger.debug(f"No date provided, using today: {target_date}")
         
-        # Получаем запись из БД
-        entry = await get_entry_by_date(user_id, target_date)
+        logger.debug(f"Target date for search: {target_date}, type: {type(target_date)}")
+        
+        # Получаем запись из БД напрямую
+        entry = db.get_diary_entry(user_id, target_date)
+        logger.debug(f"Entry from DB: {entry}")
         
         if entry:
             # Запись найдена, отображаем пользователю
