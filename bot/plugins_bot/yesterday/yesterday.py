@@ -283,6 +283,8 @@ async def yesterday_weather_callback_handler(event):
     
     if choice == "manual":
         # Обработка ввода погоды вручную
+        user_form_data[user_id]["manual_weather"] = True
+        logger.debug(f"Manual weather mode activated. User ID: {user_id}")
         await event.edit(
             "Введите описание погоды вчера:"
         )
@@ -358,6 +360,8 @@ async def yesterday_location_callback_handler(event):
     
     if choice == "manual":
         # Обработка ввода местоположения вручную
+        user_form_data[user_id]["manual_location"] = True
+        logger.debug(f"Manual location mode activated. User ID: {user_id}")
         await event.edit(
             "Введите ваше местоположение вчера:"
         )
@@ -571,6 +575,7 @@ async def yesterday_handle_manual_input(event):
     
     if state == FormState.WAITING_WEATHER and user_form_data[user_id].get("manual_weather"):
         # Пользователь вводит погоду вручную
+        logger.debug(f"Manual weather input. User ID: {user_id}, Input: '{event.text}'")
         user_form_data[user_id]["weather"] = event.text
         user_form_data[user_id]["manual_weather"] = False
         
@@ -596,6 +601,7 @@ async def yesterday_handle_manual_input(event):
         
     elif state == FormState.WAITING_LOCATION and user_form_data[user_id].get("manual_location"):
         # Пользователь вводит местоположение вручную
+        logger.debug(f"Manual location input. User ID: {user_id}, Input: '{event.text}'")
         user_form_data[user_id]["location"] = event.text
         user_form_data[user_id]["manual_location"] = False
         
