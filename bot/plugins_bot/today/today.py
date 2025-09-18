@@ -172,7 +172,7 @@ async def today_handler(event):
             [
                 Button.inline(tlgbot.i18n.t('btn_edit', lang=lang) or "Редактировать", data="edit_today"),
                 Button.inline(tlgbot.i18n.t('btn_edit_events_only', lang=lang) or "Редактировать событие", data="edit_today_events"),
-                Button.inline(tlgbot.i18n.t('btn_cancel', lang=lang) or "Отмена", data="cancel_edit")
+                Button.inline(tlgbot.i18n.t('btn_cancel', lang=lang) or "Отмена", data="cancel_edit_today")
             ]
         ]
         await event.reply(
@@ -749,7 +749,7 @@ async def handle_manual_input(event):
             await event.reply(f"Ошибка: {str(e)}")
 
 # Обработчик для кнопок редактирования существующей записи
-@tlgbot.on(events.CallbackQuery(pattern="edit_today|edit_today_events|cancel_edit"))
+@tlgbot.on(events.CallbackQuery(pattern="edit_today|edit_today_events|cancel_edit_today"))
 async def edit_today_handler(event):
     user_id = event.sender_id
     user = getattr(tlgbot, 'settings', None).get_user(user_id) if getattr(tlgbot, 'settings', None) else None
@@ -757,7 +757,7 @@ async def edit_today_handler(event):
     
     data = event.data.decode("utf-8")
     
-    if data == "cancel_edit":
+    if data == "cancel_edit_today":
         # Пользователь отменил редактирование
         await event.edit(tlgbot.i18n.t('edit_canceled', lang=lang) or "Редактирование отменено.")
         return

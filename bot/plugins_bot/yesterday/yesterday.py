@@ -10,6 +10,28 @@ tlgbot = globals().get('tlgbot')
 # logger глобально доступен в плагинах через динамическую загрузку
 logger = globals().get('logger')
 
+# Добавляем обработчик для логирования всех callback-событий в модуле
+@tlgbot.on(events.CallbackQuery())
+async def log_all_yesterday_callbacks(event):
+    # Логируем только те события, которые могут относиться к команде yesterday
+    try:
+        data = event.data.decode("utf-8")
+        if "yesterday" in data or "cancel_edit_yesterday" in data:
+            logger.debug(f"[YESTERDAY] GLOBAL CALLBACK MONITOR: Received callback with data: {data}")
+            logger.debug(f"[YESTERDAY] GLOBAL CALLBACK MONITOR: Event type: {type(event)}")
+            logger.debug(f"[YESTERDAY] GLOBAL CALLBACK MONITOR: Event sender_id: {event.sender_id}")
+            
+            # Если это наш обработчик, то предотвращаем срабатывание других обработчиков 
+            # для событий отмены редактирования записи за вчерашний день
+            if data == "cancel_edit_yesterday":
+                # Не возвращаем True здесь, чтобы позволить специализированному обработчику handle_yesterday_editing
+                # обработать событие, но добавляем проверку, чтобы в других плагинах не начиналось редактирование
+                pass
+    except Exception as e:
+        logger.debug(f"[YESTERDAY] GLOBAL CALLBACK MONITOR: Error processing callback: {str(e)}")
+    # Обязательно возвращаем False, чтобы событие было обработано другими обработчиками
+    return False
+
 # Определяем состояния FSM
 class FormState(str, Enum):
     WAITING_MOOD = "waiting_mood"
@@ -134,9 +156,15 @@ def get_events_keyboard(lang="ru", edit_mode=False):
 @tlgbot.on(tlgbot.cmd('yesterday'))
 @require_diary_user
 async def yesterday_handler(event):
+    # Добавляем отладочную информацию в начале обработчика
+    logger.debug(f"[YESTERDAY] Command handler started")
+    logger.debug(f"[YESTERDAY] Event type: {type(event)}")
+    
     user_id = event.sender_id
     user = getattr(tlgbot, 'settings', None).get_user(user_id) if getattr(tlgbot, 'settings', None) else None
     lang = getattr(user, 'lang', None) or 'ru'
+    
+    logger.debug(f"[YESTERDAY] User ID: {user_id}, Lang: {lang}")
     try:
         from core.database.manager import DatabaseManager
     except ImportError:
@@ -174,8 +202,15 @@ async def yesterday_handler(event):
                 Button.inline(tlgbot.i18n.t('btn_cancel', lang=lang) or "Отмена", data="cancel_edit_yesterday")
             ]
         ]
+        
+        # Добавляем отладочную информацию для кнопок
+        logger.debug(f"[YESTERDAY] Creating buttons for edit options. User ID: {user_id}")
+        for row_idx, row in enumerate(buttons):
+            for btn_idx, btn in enumerate(row):
+                logger.debug(f"[YESTERDAY] Button [{row_idx}][{btn_idx}]: text={btn.text}, data={btn.data}")
+        
         await event.reply(
-            "Запись за вчерашний день уже существует. Хотите отредактировать её?",
+            tlgbot.i18n.t('yesterday_entry_exists_edit', lang=lang) or "Запись за вчерашний день уже существует. Хотите отредактировать её?",
             buttons=buttons
         )
         return
@@ -735,13 +770,38 @@ async def handle_yesterday_editing(event):
     user = getattr(tlgbot, 'settings', None).get_user(user_id) if getattr(tlgbot, 'settings', None) else None
     lang = getattr(user, 'lang', None) or 'ru'
     
+    # Добавляем подробный лог для отладки
     data = event.data.decode("utf-8")
-    logger.debug(f"Edit handler called with data: {data}, user_id: {user_id}")
+    logger.debug(f"[YESTERDAY] Edit handler called with data: {data}, user_id: {user_id}")
+    logger.debug(f"[YESTERDAY] Event type: {type(event)}")
+    logger.debug(f"[YESTERDAY] Event sender_id: {event.sender_id}")
+    logger.debug(f"[YESTERDAY] Event chat: {getattr(event, 'chat', None)}")
+    logger.debug(f"[YESTERDAY] Event message ID: {getattr(event.message, 'id', None) if hasattr(event, 'message') else None}")
     
     if data == "cancel_edit_yesterday":
         # Пользователь отменил редактирование
-        await event.edit(tlgbot.i18n.t('edit_canceled', lang=lang) or "Редактирование отменено.")
-        return
+        logger.debug(f"[YESTERDAY] Processing cancel_edit_yesterday action")
+        try:
+            await event.edit(tlgbot.i18n.t('edit_canceled', lang=lang) or "Редактирование отменено.")
+            logger.debug(f"[YESTERDAY] Successfully edited message with cancel confirmation")
+        except Exception as e:
+            logger.error(f"[YESTERDAY] Error in cancel_edit_yesterday: {str(e)}")
+            try:
+                # Если не удалось отредактировать сообщение, попробуем ответить новым
+                await event.respond(tlgbot.i18n.t('edit_canceled', lang=lang) or "Редактирование отменено.")
+                logger.debug(f"[YESTERDAY] Sent new message as fallback for cancel confirmation")
+            except Exception as e2:
+                logger.error(f"[YESTERDAY] Failed to send response message: {str(e2)}")
+        
+        # Очищаем данные пользователя, чтобы предотвратить переход к другим обработчикам
+        if user_id in user_states:
+            del user_states[user_id]
+        if user_id in user_form_data:
+            del user_form_data[user_id]
+            
+        # Предотвращаем выполнение других callback-обработчиков, завершая событие
+        await event.answer("Отменено")
+        return True  # Обозначаем, что событие обработано
     
     # Начинаем редактирование
     try:
