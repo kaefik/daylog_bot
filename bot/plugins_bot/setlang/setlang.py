@@ -6,6 +6,9 @@
 from telethon import events, Button
 from cfg import config_tlg
 
+# tlgbot глобально доступен в плагинах через динамическую загрузку
+tlgbot = globals().get('tlgbot')
+
 @tlgbot.on(tlgbot.cmd('setlang'))
 async def setlang_handler(event):
     user = tlgbot.settings.get_user(event.sender_id)
