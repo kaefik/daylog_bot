@@ -180,10 +180,11 @@ async def weather_callback_handler(event):
         return
     
     if choice == "manual":
+        # Устанавливаем флаг ожидания ручного ввода погоды
+        user_form_data[user_id]["waiting_manual_weather"] = True
         await event.edit(tlgbot.i18n.t('today_weather_manual', lang=lang) or "Введите описание погоды:")
-        # Здесь должен быть код для ожидания текстового ответа
-        # Для простоты реализации пропустим его
-        user_form_data[user_id]["weather"] = None
+        # Не переходим к следующему шагу, ждем ввода
+        return
     elif choice != "skip":
         # Преобразуем выбор в соответствующее значение для БД
         weather_mapping = {
@@ -226,10 +227,11 @@ async def location_callback_handler(event):
         return
     
     if choice == "manual":
+        # Устанавливаем флаг ожидания ручного ввода местоположения
+        user_form_data[user_id]["waiting_manual_location"] = True
         await event.edit(tlgbot.i18n.t('today_location_manual', lang=lang) or "Введите ваше местоположение:")
-        # Здесь должен быть код для ожидания текстового ответа
-        # Для простоты реализации пропустим его
-        user_form_data[user_id]["location"] = None
+        # Не переходим к следующему шагу, ждем ввода
+        return
     elif choice != "skip":
         # Преобразуем выбор в соответствующее значение для БД
         location_mapping = {
@@ -321,24 +323,48 @@ async def handle_manual_input(event):
     current_state = user_states[user_id]
     text = event.text
     
-    if current_state == FormState.WAITING_WEATHER and "weather" not in user_form_data[user_id]:
+    # Проверяем, есть ли у нас команда (начинается с /)
+    if text.startswith('/'):
+        # Это команда, не обрабатываем ее здесь
+        return
+    
+    # Проверяем ожидание ручного ввода погоды
+    if current_state == FormState.WAITING_WEATHER and user_form_data[user_id].get("waiting_manual_weather"):
+        # Сохраняем введенную погоду
         user_form_data[user_id]["weather"] = text
-        # Переходим к следующему шагу
+        # Удаляем флаг ожидания
+        del user_form_data[user_id]["waiting_manual_weather"]
+        
+        # Переходим к следующему шагу - местоположение
         user_states[user_id] = FormState.WAITING_LOCATION
+        
         await event.reply(
             tlgbot.i18n.t('today_location_prompt', lang=lang) or "Где вы находитесь?",
             buttons=get_location_keyboard(lang)
         )
-    elif current_state == FormState.WAITING_LOCATION and "location" not in user_form_data[user_id]:
+        return
+        
+    # Проверяем ожидание ручного ввода местоположения
+    elif current_state == FormState.WAITING_LOCATION and user_form_data[user_id].get("waiting_manual_location"):
+        # Сохраняем введенное местоположение
         user_form_data[user_id]["location"] = text
-        # Переходим к следующему шагу
+        # Удаляем флаг ожидания
+        del user_form_data[user_id]["waiting_manual_location"]
+        
+        # Переходим к следующему шагу - события
         user_states[user_id] = FormState.WAITING_EVENTS
+        
         await event.reply(
             tlgbot.i18n.t('today_events_prompt', lang=lang) or "Опишите события дня (или нажмите 'Пропустить'):",
             buttons=get_events_keyboard(lang)
         )
+        return
+        
+    # Если мы ожидаем ввод событий
     elif current_state == FormState.WAITING_EVENTS:
+        # Сохраняем введенные события
         user_form_data[user_id]["events"] = text
+        
         # Завершаем заполнение формы и сохраняем данные
         try:
             from core.database.manager import DatabaseManager
