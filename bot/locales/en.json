@@ -150,5 +150,19 @@
     "entry_mood": "🙂 Mood: {mood}",
     "entry_weather": "🌤 Weather: {weather}",
     "entry_location": "📍 Location: {location}",
-    "entry_events": "📌 Events: {events}"
+    "entry_events": "📌 Events: {events}",
+    
+    "yesterday_mood_prompt": "How was your mood yesterday?",
+    "yesterday_weather_prompt": "What was the weather like yesterday?",
+    "yesterday_location_prompt": "Where were you yesterday?",
+    "yesterday_events_prompt": "Describe the events of yesterday (or click 'Skip'):",
+    "yesterday_weather_manual": "Enter weather description for yesterday:",
+    "yesterday_location_manual": "Enter your location for yesterday:",
+    
+    "yesterday_entry_exists": "Yesterday's entry already exists.",
+    "yesterday_entry_exists_edit": "Yesterday's entry already exists. Would you like to edit it?",
+    "yesterday_entry_created": "A new entry for yesterday has been created.",
+    "yesterday_entry_updated": "Yesterday's entry has been successfully updated!",
+    "yesterday_entry_error": "Error creating entry.",
+    "yesterday_entry_update_error": "Error updating entry."
 }

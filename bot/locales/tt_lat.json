@@ -149,5 +149,19 @@
     "entry_mood": "🙂 Käyef: {mood}",
     "entry_weather": "🌤 Hava torışı: {weather}",
     "entry_location": "📍 Urınlaşu: {location}",
-    "entry_events": "📌 Vaqıyğalar: {events}"
+    "entry_events": "📌 Vaqıyğalar: {events}",
+    
+    "yesterday_mood_prompt": "Kiçä käyefegez niçek ide?",
+    "yesterday_weather_prompt": "Kiçä hava torışı nindi ide?",
+    "yesterday_location_prompt": "Kiçä qayda idegez?",
+    "yesterday_events_prompt": "Kiçäge kön vaqıyğaların tasvirlağız (yäki 'Sikertu' töymäsenä basığız):",
+    "yesterday_weather_manual": "Kiçäge hava torışın tasvirlağız:",
+    "yesterday_location_manual": "Kiçäge torğan urınığıznı kertegez:",
+    
+    "yesterday_entry_exists": "Kiçäge kön öçen yazma inde bar.",
+    "yesterday_entry_exists_edit": "Kiçäge kön öçen yazma inde bar. Anı üzgärtergä telisezme?",
+    "yesterday_entry_created": "Kiçäge kön öçen yaña yazma buldırıldı.",
+    "yesterday_entry_updated": "Kiçäge kön yazması uñışlı yañartıldı!",
+    "yesterday_entry_error": "Yazma tudırğanda xata çıqtı.",
+    "yesterday_entry_update_error": "Yazmanı yañartu xatası."
 }

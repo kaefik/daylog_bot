@@ -149,5 +149,19 @@
     "entry_mood": "🙂 Käyef: {mood}",
     "entry_weather": "🌤 Hawa toroşo: {weather}",
     "entry_location": "📍 Urınlaşıu: {location}",
-    "entry_events": "📌 Waqiğalar: {events}"
+    "entry_events": "📌 Waqiğalar: {events}",
+    
+    "yesterday_mood_prompt": "Kisä käyefegeð nisek ine?",
+    "yesterday_weather_prompt": "Kisä hawa toroşo nindäy ine?",
+    "yesterday_location_prompt": "Kisä qayða inegeð?",
+    "yesterday_events_prompt": "Kisäge kön waqiğaların tasuirlaǧıð (yäki 'Sikereü' töymähïnä baśıǧıð):",
+    "yesterday_weather_manual": "Kisäge hawa toroşon tasuirlaǧıð:",
+    "yesterday_location_manual": "Kisäge torǧan urınıǧıððı kertegeð:",
+    
+    "yesterday_entry_exists": "Kisäge kön ösön yaðma inde bar.",
+    "yesterday_entry_exists_edit": "Kisäge kön ösön yaðma inde bar. Unı üðgärtergä teläyhegeðme?",
+    "yesterday_entry_created": "Kisäge kön ösön yañı yaðma buldırıldı.",
+    "yesterday_entry_updated": "Kisäge kön yaðmahı uñışlı yañartıldı!",
+    "yesterday_entry_error": "Yaðma tıuðırǧanda xata sıqtı.",
+    "yesterday_entry_update_error": "Yaðmanı yañartıu xatahı."
 }

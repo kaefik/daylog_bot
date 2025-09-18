@@ -1,0 +1,805 @@
+# Плагин для команды /yesterday с мастером заполнения записи за предыдущий день
+
+from datetime import date, timedelta
+from enum import Enum
+from telethon import events, Button
+from bot.require_diary_user import require_diary_user
+
+# tlgbot глобально доступен в плагинах через динамическую загрузку
+tlgbot = globals().get('tlgbot')
+
+# Определяем состояния FSM
+class FormState(str, Enum):
+    WAITING_MOOD = "waiting_mood"
+    WAITING_WEATHER = "waiting_weather"
+    WAITING_LOCATION = "waiting_location"
+    WAITING_EVENTS = "waiting_events"
+
+# Словарь для хранения временных данных пользователей (в памяти)
+# В реальном приложении лучше использовать Redis или другое хранилище
+user_states = {}
+user_form_data = {}
+
+# Функция для отображения содержимого записи
+async def display_entry_content(event, user_id, entry_date, lang="ru"):
+    try:
+        from core.database.manager import DatabaseManager
+        from cfg.config_tlg import DAYLOG_DB_PATH
+        
+        db = DatabaseManager(db_path=DAYLOG_DB_PATH)
+        entry = db.get_diary_entry(user_id, entry_date)
+        
+        if not entry:
+            await event.respond(tlgbot.i18n.t('entry_not_found', lang=lang) or "Запись не найдена.")
+            return
+            
+        # Формируем сообщение с содержимым записи
+        mood = entry.get("mood") or tlgbot.i18n.t('not_specified', lang=lang) or "Не указано"
+        weather = entry.get("weather") or tlgbot.i18n.t('not_specified', lang=lang) or "Не указано"
+        location = entry.get("location") or tlgbot.i18n.t('not_specified', lang=lang) or "Не указано"
+        events = entry.get("events") or tlgbot.i18n.t('not_specified', lang=lang) or "Не указано"
+        
+        # Используем локализованные строки для каждой части сообщения
+        date_str = str(entry_date)
+        message = (tlgbot.i18n.t('entry_title', lang=lang, date=date_str) or f"📝 Запись от {date_str}") + "\n\n"
+        message += (tlgbot.i18n.t('entry_mood', lang=lang, mood=mood) or f"🙂 Настроение: {mood}") + "\n"
+        message += (tlgbot.i18n.t('entry_weather', lang=lang, weather=weather) or f"🌤 Погода: {weather}") + "\n"
+        message += (tlgbot.i18n.t('entry_location', lang=lang, location=location) or f"📍 Местоположение: {location}") + "\n"
+        message += (tlgbot.i18n.t('entry_events', lang=lang, events=events) or f"📌 События: {events}") + "\n"
+        
+        await event.respond(message, parse_mode='markdown')
+    except Exception as e:
+        import traceback
+        traceback_str = traceback.format_exc()
+        print(f"ERROR displaying entry: {traceback_str}")
+        await event.respond(f"Ошибка при отображении записи: {str(e)}")
+
+# Inline-клавиатуры для каждого поля
+def get_mood_keyboard(lang="ru"):
+    return [
+        [
+            Button.inline(tlgbot.i18n.t('mood_excellent', lang=lang) or "Отлично", data=f"yesterday_mood_excellent"),
+            Button.inline(tlgbot.i18n.t('mood_good', lang=lang) or "Хорошо", data=f"yesterday_mood_good"),
+        ],
+        [
+            Button.inline(tlgbot.i18n.t('mood_normal', lang=lang) or "Нормально", data=f"yesterday_mood_normal"),
+            Button.inline(tlgbot.i18n.t('mood_bad', lang=lang) or "Плохо", data=f"yesterday_mood_bad"),
+        ],
+        [
+            Button.inline(tlgbot.i18n.t('mood_terrible', lang=lang) or "Ужасно", data=f"yesterday_mood_terrible"),
+        ],
+        [
+            Button.inline(tlgbot.i18n.t('btn_skip', lang=lang) or "Пропустить", data=f"yesterday_mood_skip"),
+        ]
+    ]
+
+def get_weather_keyboard(lang="ru"):
+    return [
+        [
+            Button.inline(tlgbot.i18n.t('weather_sunny', lang=lang) or "Солнечно", data=f"yesterday_weather_sunny"),
+            Button.inline(tlgbot.i18n.t('weather_cloudy', lang=lang) or "Облачно", data=f"yesterday_weather_cloudy"),
+        ],
+        [
+            Button.inline(tlgbot.i18n.t('weather_rainy', lang=lang) or "Дождь", data=f"yesterday_weather_rainy"),
+            Button.inline(tlgbot.i18n.t('weather_snowy', lang=lang) or "Снег", data=f"yesterday_weather_snowy"),
+        ],
+        [
+            Button.inline(tlgbot.i18n.t('weather_foggy', lang=lang) or "Туман", data=f"yesterday_weather_foggy"),
+            Button.inline(tlgbot.i18n.t('btn_manual', lang=lang) or "Ввести вручную", data=f"yesterday_weather_manual"),
+        ],
+        [
+            Button.inline(tlgbot.i18n.t('btn_skip', lang=lang) or "Пропустить", data=f"yesterday_weather_skip"),
+            Button.inline(tlgbot.i18n.t('btn_back', lang=lang) or "Назад", data=f"yesterday_weather_back"),
+        ]
+    ]
+
+def get_location_keyboard(lang="ru"):
+    return [
+        [
+            Button.inline(tlgbot.i18n.t('location_home', lang=lang) or "Дом", data=f"yesterday_location_home"),
+            Button.inline(tlgbot.i18n.t('location_work', lang=lang) or "Работа", data=f"yesterday_location_work"),
+        ],
+        [
+            Button.inline(tlgbot.i18n.t('location_street', lang=lang) or "Улица", data=f"yesterday_location_street"),
+            Button.inline(tlgbot.i18n.t('btn_manual', lang=lang) or "Ввести вручную", data=f"yesterday_location_manual"),
+        ],
+        [
+            Button.inline(tlgbot.i18n.t('btn_skip', lang=lang) or "Пропустить", data=f"yesterday_location_skip"),
+            Button.inline(tlgbot.i18n.t('btn_back', lang=lang) or "Назад", data=f"yesterday_location_back"),
+        ]
+    ]
+
+def get_events_keyboard(lang="ru", edit_mode=False):
+    buttons = [
+        [
+            Button.inline(tlgbot.i18n.t('btn_skip', lang=lang) or "Пропустить", data="yesterday_events_skip"),
+            Button.inline(tlgbot.i18n.t('btn_back', lang=lang) or "Назад", data="yesterday_events_back"),
+        ]
+    ]
+    
+    # Если в режиме редактирования, добавляем кнопки "Заменить", "Добавить" и "Правка"
+    if edit_mode:
+        # Отладочное сообщение при создании кнопок
+        print(f"DEBUG: Creating edit mode buttons with data: yesterday_events_replace, yesterday_events_append and yesterday_events_edit")
+        
+        replace_btn = Button.inline(tlgbot.i18n.t('btn_replace', lang=lang) or "Заменить текст", data="yesterday_events_replace")
+        append_btn = Button.inline(tlgbot.i18n.t('btn_append', lang=lang) or "Добавить к тексту", data="yesterday_events_append")
+        edit_btn = Button.inline(tlgbot.i18n.t('btn_edit_text', lang=lang) or "Правка", data="yesterday_events_edit")
+        buttons.insert(0, [replace_btn, append_btn, edit_btn])
+        
+    return buttons
+
+@tlgbot.on(tlgbot.cmd('yesterday'))
+@require_diary_user
+async def yesterday_handler(event):
+    user_id = event.sender_id
+    user = getattr(tlgbot, 'settings', None).get_user(user_id) if getattr(tlgbot, 'settings', None) else None
+    lang = getattr(user, 'lang', None) or 'ru'
+    try:
+        from core.database.manager import DatabaseManager
+    except ImportError:
+        await event.reply(tlgbot.i18n.t('db_manager_import_error', lang=lang))
+        return
+
+    try:
+        from cfg.config_tlg import DAYLOG_DB_PATH
+    except ImportError:
+        await event.reply(tlgbot.i18n.t('db_path_import_error', lang=lang))
+        return
+
+    db = DatabaseManager(db_path=DAYLOG_DB_PATH)
+    yesterday_date = date.today() - timedelta(days=1)
+    entry = db.get_diary_entry(user_id, yesterday_date)
+    
+    # Добавляем отладочную информацию
+    print(f"DEBUG: Entry from DB for yesterday command: {entry}")
+    
+    if entry:
+        # Проверяем, содержит ли запись все необходимые поля
+        required_fields = ["mood", "weather", "location", "events"]
+        for field in required_fields:
+            if field not in entry:
+                print(f"WARNING: Missing field '{field}' in entry from DB")
+                # Инициализируем отсутствующие поля
+                entry[field] = None
+    
+    if entry:
+        # Добавляем inline-кнопки для редактирования существующей записи
+        buttons = [
+            [
+                Button.inline(tlgbot.i18n.t('btn_edit', lang=lang) or "Редактировать", data="edit_yesterday"),
+                Button.inline(tlgbot.i18n.t('btn_edit_events_only', lang=lang) or "Редактировать событие", data="edit_yesterday_events"),
+                Button.inline(tlgbot.i18n.t('btn_cancel', lang=lang) or "Отмена", data="cancel_edit_yesterday")
+            ]
+        ]
+        await event.reply(
+            "Запись за вчерашний день уже существует. Хотите отредактировать её?",
+            buttons=buttons
+        )
+        return
+    
+    # Начинаем мастер заполнения с первого шага - настроение
+    user_states[user_id] = FormState.WAITING_MOOD
+    user_form_data[user_id] = {"entry_date": yesterday_date}
+    
+    await event.reply(
+        "Какое у вас было настроение вчера?",
+        buttons=get_mood_keyboard(lang)
+    )
+
+# Обработчики для инлайн-кнопок формы
+@tlgbot.on(events.CallbackQuery(pattern="yesterday_mood_.*"))
+async def yesterday_mood_callback_handler(event):
+    user_id = event.sender_id
+    user = getattr(tlgbot, 'settings', None).get_user(user_id) if getattr(tlgbot, 'settings', None) else None
+    lang = getattr(user, 'lang', None) or 'ru'
+    
+    if user_id not in user_states or user_states[user_id] != FormState.WAITING_MOOD:
+        await event.answer(tlgbot.i18n.t('form_invalid_state', lang=lang) or "Неверное состояние формы")
+        return
+    
+    data = event.data.decode("utf-8")
+    choice = data.split("_")[2]  # yesterday_mood_choice
+    
+    # Обработка выбора
+    if choice == "back":
+        # Для настроения нет предыдущего шага
+        await event.answer(tlgbot.i18n.t('form_first_step', lang=lang) or "Это первый шаг")
+        return
+    
+    if choice != "skip":
+        # Преобразуем выбор в соответствующее значение для БД
+        mood_mapping = {
+            "excellent": "Отлично",
+            "good": "Хорошо",
+            "normal": "Нормально",
+            "bad": "Плохо",
+            "terrible": "Ужасно"
+        }
+        user_form_data[user_id]["mood"] = mood_mapping.get(choice)
+    
+    # Переходим к следующему шагу - погода
+    user_states[user_id] = FormState.WAITING_WEATHER
+    
+    # Для режима редактирования показываем текущее значение
+    if user_form_data[user_id].get("edit_mode"):
+        # Безопасно получаем текущее значение погоды
+        current_weather = "Не указано"
+        if "weather" in user_form_data[user_id] and user_form_data[user_id]["weather"]:
+            current_weather = user_form_data[user_id]["weather"]
+        else:
+            current_weather = tlgbot.i18n.t('not_specified', lang=lang) or "Не указано"
+            
+        # Исправляем вызов метода локализации, передавая параметр weather напрямую
+        edit_weather_message = f"Вчерашняя погода:\n\n{current_weather}\n\nВыберите новую погоду:"
+            
+        await event.edit(
+            edit_weather_message,
+            buttons=get_weather_keyboard(lang)
+        )
+    else:
+        await event.edit(
+            "Какая была погода вчера?",
+            buttons=get_weather_keyboard(lang)
+        )
+
+@tlgbot.on(events.CallbackQuery(pattern="yesterday_weather_.*"))
+async def yesterday_weather_callback_handler(event):
+    user_id = event.sender_id
+    user = getattr(tlgbot, 'settings', None).get_user(user_id) if getattr(tlgbot, 'settings', None) else None
+    lang = getattr(user, 'lang', None) or 'ru'
+    
+    if user_id not in user_states or user_states[user_id] != FormState.WAITING_WEATHER:
+        await event.answer(tlgbot.i18n.t('form_invalid_state', lang=lang) or "Неверное состояние формы")
+        return
+    
+    data = event.data.decode("utf-8")
+    choice = data.split("_")[2]  # yesterday_weather_choice
+    
+    # Обработка выбора
+    if choice == "back":
+        # Возвращаемся к предыдущему шагу - настроение
+        user_states[user_id] = FormState.WAITING_MOOD
+        
+        # Для режима редактирования показываем текущее значение
+        if user_form_data[user_id].get("edit_mode"):
+            current_mood = user_form_data[user_id].get("mood") or tlgbot.i18n.t('not_specified', lang=lang) or "Не указано"
+            
+            # Исправляем вызов метода локализации, передавая параметр mood напрямую
+            edit_mood_message = f"Вчерашнее настроение:\n\n{current_mood}\n\nВыберите новое настроение:"
+                
+            await event.edit(
+                edit_mood_message,
+                buttons=get_mood_keyboard(lang)
+            )
+        else:
+            await event.edit(
+                "Какое у вас было настроение вчера?",
+                buttons=get_mood_keyboard(lang)
+            )
+        return
+    
+    if choice == "manual":
+        # Обработка ввода погоды вручную
+        await event.edit(
+            "Введите описание погоды вчера:"
+        )
+        # Остаемся в том же состоянии, но ожидаем текстовый ввод
+        return
+    
+    if choice != "skip":
+        # Преобразуем выбор в соответствующее значение для БД
+        weather_mapping = {
+            "sunny": "Солнечно",
+            "cloudy": "Облачно",
+            "rainy": "Дождь",
+            "snowy": "Снег",
+            "foggy": "Туман"
+        }
+        user_form_data[user_id]["weather"] = weather_mapping.get(choice)
+    
+    # Переходим к следующему шагу - местоположение
+    user_states[user_id] = FormState.WAITING_LOCATION
+    
+    # Для режима редактирования показываем текущее значение
+    if user_form_data[user_id].get("edit_mode"):
+        current_location = user_form_data[user_id].get("location") or tlgbot.i18n.t('not_specified', lang=lang) or "Не указано"
+        
+        # Исправляем вызов метода локализации, передавая параметр location напрямую
+        edit_location_message = f"Вчерашнее местоположение:\n\n{current_location}\n\nВыберите новое местоположение:"
+        
+        await event.edit(
+            edit_location_message,
+            buttons=get_location_keyboard(lang)
+        )
+    else:
+        await event.edit(
+            "Где вы находились вчера?",
+            buttons=get_location_keyboard(lang)
+        )
+
+@tlgbot.on(events.CallbackQuery(pattern="yesterday_location_.*"))
+async def yesterday_location_callback_handler(event):
+    user_id = event.sender_id
+    user = getattr(tlgbot, 'settings', None).get_user(user_id) if getattr(tlgbot, 'settings', None) else None
+    lang = getattr(user, 'lang', None) or 'ru'
+    
+    if user_id not in user_states or user_states[user_id] != FormState.WAITING_LOCATION:
+        await event.answer(tlgbot.i18n.t('form_invalid_state', lang=lang) or "Неверное состояние формы")
+        return
+    
+    data = event.data.decode("utf-8")
+    choice = data.split("_")[2]  # yesterday_location_choice
+    
+    # Обработка выбора
+    if choice == "back":
+        # Возвращаемся к предыдущему шагу - погода
+        user_states[user_id] = FormState.WAITING_WEATHER
+        
+        # Для режима редактирования показываем текущее значение
+        if user_form_data[user_id].get("edit_mode"):
+            current_weather = user_form_data[user_id].get("weather") or tlgbot.i18n.t('not_specified', lang=lang) or "Не указано"
+            
+            # Исправляем вызов метода локализации, передавая параметр weather напрямую
+            edit_weather_message = f"Вчерашняя погода:\n\n{current_weather}\n\nВыберите новую погоду:"
+            
+            await event.edit(
+                edit_weather_message,
+                buttons=get_weather_keyboard(lang)
+            )
+        else:
+            await event.edit(
+                "Какая была погода вчера?",
+                buttons=get_weather_keyboard(lang)
+            )
+        return
+    
+    if choice == "manual":
+        # Обработка ввода местоположения вручную
+        await event.edit(
+            "Введите ваше местоположение вчера:"
+        )
+        # Остаемся в том же состоянии, но ожидаем текстовый ввод
+        return
+    
+    if choice != "skip":
+        # Преобразуем выбор в соответствующее значение для БД
+        location_mapping = {
+            "home": "Дом",
+            "work": "Работа",
+            "street": "Улица"
+        }
+        user_form_data[user_id]["location"] = location_mapping.get(choice)
+    
+    # Переходим к следующему шагу - события
+    user_states[user_id] = FormState.WAITING_EVENTS
+    
+    # Для режима редактирования показываем текущее значение
+    edit_mode = user_form_data[user_id].get("edit_mode", False)
+    current_events = user_form_data[user_id].get("events", "")
+    
+    # Отладочное сообщение
+    print(f"DEBUG: Showing events form with edit_mode={edit_mode} in location_callback. User ID: {user_id}, Current events: {current_events}")
+    
+    if edit_mode:
+        # Исправляем вызов метода локализации, передавая параметр events напрямую
+        edit_events_message = f"Вчерашние события:\n{current_events}.\n\nОпишите события вчерашнего дня (или нажмите 'Пропустить'):"
+        
+        await event.edit(
+            edit_events_message,
+            buttons=get_events_keyboard(lang, edit_mode=True)
+        )
+    else:
+        await event.edit(
+            "Опишите события вчерашнего дня (или нажмите 'Пропустить'):",
+            buttons=get_events_keyboard(lang, edit_mode=False)
+        )
+
+@tlgbot.on(events.CallbackQuery(pattern="yesterday_events_.*"))
+async def yesterday_events_callback_handler(event):
+    user_id = event.sender_id
+    user = getattr(tlgbot, 'settings', None).get_user(user_id) if getattr(tlgbot, 'settings', None) else None
+    lang = getattr(user, 'lang', None) or 'ru'
+    
+    if user_id not in user_states or user_states[user_id] != FormState.WAITING_EVENTS:
+        await event.answer(tlgbot.i18n.t('form_invalid_state', lang=lang) or "Неверное состояние формы")
+        return
+    
+    data = event.data.decode("utf-8")
+    parts = data.split("_")
+    choice = parts[2] if len(parts) > 2 else ""  # yesterday_events_choice
+    
+    # Обработка кнопок редактирования
+    if choice == "replace":
+        current_events = user_form_data[user_id].get("events") or ""
+        
+        # Отладочное сообщение
+        print(f"DEBUG: Replace button clicked. User ID: {user_id}, Current events: {current_events}")
+        
+        replace_message = f"Вчерашние события:\n\"{current_events}\"\n\nВведите новый текст, который полностью заменит текущий:"
+            
+        await event.edit(replace_message)
+        # Ожидаем ввод пользователя, который будет обработан в handle_manual_input
+        return
+    
+    elif choice == "append":
+        current_events = user_form_data[user_id].get("events") or ""
+        
+        append_message = f"Вчерашние события:\n\"{current_events}\"\n\nВведите текст, который будет добавлен к текущему:"
+            
+        await event.edit(append_message)
+        # Ожидаем ввод пользователя, который будет обработан в handle_manual_input
+        return
+        
+    elif choice == "edit":
+        current_events = user_form_data[user_id].get("events") or ""
+        
+        # Отладочное сообщение
+        print(f"DEBUG: Edit button clicked. User ID: {user_id}, Current events: {current_events}")
+        
+        edit_message = f"Вчерашние события:\n\"{current_events}\"\n\nОтредактируйте текст:"
+            
+        await event.edit(edit_message)
+        # Ожидаем ввод пользователя, который будет обработан в handle_manual_input
+        return
+    
+    # Обработка выбора
+    if choice == "back":
+        # Возвращаемся к предыдущему шагу - местоположение
+        user_states[user_id] = FormState.WAITING_LOCATION
+        
+        # Для режима редактирования показываем текущее значение
+        if user_form_data[user_id].get("edit_mode"):
+            current_location = user_form_data[user_id].get("location") or tlgbot.i18n.t('not_specified', lang=lang) or "Не указано"
+            
+            # Исправляем вызов метода локализации, передавая параметр location напрямую
+            edit_location_message = f"Вчерашнее местоположение:\n\n{current_location}\n\nВыберите новое местоположение:"
+            
+            await event.edit(
+                edit_location_message,
+                buttons=get_location_keyboard(lang)
+            )
+        else:
+            await event.edit(
+                "Где вы находились вчера?",
+                buttons=get_location_keyboard(lang)
+            )
+        return
+    
+    # Если пользователь не нажал "Пропустить", сохраняем текущие события
+    # (события обычно вводятся вручную, поэтому здесь в основном обрабатывается пропуск)
+    
+    # Завершаем форму и сохраняем данные в БД
+    try:
+        from core.database.manager import DatabaseManager
+        from cfg.config_tlg import DAYLOG_DB_PATH
+        
+        db = DatabaseManager(db_path=DAYLOG_DB_PATH)
+        
+        # Собираем данные из формы
+        entry_date = user_form_data[user_id]["entry_date"]
+        mood = user_form_data[user_id].get("mood")
+        weather = user_form_data[user_id].get("weather")
+        location = user_form_data[user_id].get("location")
+        events = user_form_data[user_id].get("events", "")
+        
+        # Проверяем, существует ли уже запись за этот день
+        existing_entry = db.get_diary_entry(user_id, entry_date)
+        
+        if existing_entry:
+            # Обновляем существующую запись
+            success = db.update_diary_entry(
+                user_id, 
+                entry_date,
+                mood=mood, 
+                weather=weather, 
+                location=location, 
+                events=events
+            )
+            if success:
+                await event.edit(tlgbot.i18n.t('yesterday_entry_updated', lang=lang) or "Запись за вчерашний день успешно обновлена!")
+                # Отображаем содержимое обновленной записи
+                await display_entry_content(event, user_id, entry_date, lang)
+            else:
+                await event.edit(tlgbot.i18n.t('yesterday_entry_update_error', lang=lang) or "Ошибка обновления записи")
+        else:
+            # Создаем новую запись
+            created = db.create_diary_entry(
+                user_id, 
+                entry_date,
+                mood=mood,
+                weather=weather,
+                location=location,
+                events=events
+            )
+            if created:
+                await event.edit(tlgbot.i18n.t('yesterday_entry_created', lang=lang) or "Новая запись за вчерашний день создана.")
+                # Отображаем содержимое новой записи
+                await display_entry_content(event, user_id, entry_date, lang)
+            else:
+                await event.edit(tlgbot.i18n.t('yesterday_entry_error', lang=lang) or "Ошибка создания записи")
+                
+        # Очищаем данные пользователя
+        if user_id in user_states:
+            del user_states[user_id]
+        if user_id in user_form_data:
+            del user_form_data[user_id]
+        
+    except Exception as e:
+        import traceback
+        traceback_str = traceback.format_exc()
+        print(f"ERROR saving entry: {traceback_str}")
+        if user_form_data[user_id].get("edit_mode"):
+            await event.edit(tlgbot.i18n.t('today_entry_update_error', lang=lang) or f"Ошибка при обновлении записи: {str(e)}")
+        else:
+            await event.edit(tlgbot.i18n.t('today_entry_error', lang=lang) or f"Ошибка при создании записи: {str(e)}")
+
+# Обработчик для ручного ввода текста
+@tlgbot.on(events.NewMessage)
+async def yesterday_handle_manual_input(event):
+    user_id = event.sender_id
+    user = getattr(tlgbot, 'settings', None).get_user(user_id) if getattr(tlgbot, 'settings', None) else None
+    lang = getattr(user, 'lang', None) or 'ru'
+    
+    # Проверяем, что пользователь находится в процессе заполнения формы
+    if user_id not in user_states:
+        return
+    
+    # Получаем текущее состояние пользователя
+    state = user_states[user_id]
+    
+    if state == FormState.WAITING_WEATHER and user_form_data[user_id].get("manual_weather"):
+        # Пользователь вводит погоду вручную
+        user_form_data[user_id]["weather"] = event.text
+        user_form_data[user_id]["manual_weather"] = False
+        
+        # Переходим к следующему шагу - местоположение
+        user_states[user_id] = FormState.WAITING_LOCATION
+        
+        # Для режима редактирования показываем текущее значение
+        if user_form_data[user_id].get("edit_mode"):
+            current_location = user_form_data[user_id].get("location") or tlgbot.i18n.t('not_specified', lang=lang) or "Не указано"
+            
+            # Исправляем вызов метода локализации, передавая параметр location напрямую
+            edit_location_message = f"Вчерашнее местоположение:\n\n{current_location}\n\nВыберите новое местоположение:"
+            
+            await event.respond(
+                edit_location_message,
+                buttons=get_location_keyboard(lang)
+            )
+        else:
+            await event.respond(
+                "Где вы находились вчера?",
+                buttons=get_location_keyboard(lang)
+            )
+        
+    elif state == FormState.WAITING_LOCATION and user_form_data[user_id].get("manual_location"):
+        # Пользователь вводит местоположение вручную
+        user_form_data[user_id]["location"] = event.text
+        user_form_data[user_id]["manual_location"] = False
+        
+        # Переходим к следующему шагу - события
+        user_states[user_id] = FormState.WAITING_EVENTS
+        
+        # Для режима редактирования показываем текущее значение
+        edit_mode = user_form_data[user_id].get("edit_mode", False)
+        current_events = user_form_data[user_id].get("events", "")
+        
+        # Отладочное сообщение
+        print(f"DEBUG: Showing events edit form with edit_mode=True. User ID: {user_id}, Current events: {current_events}")
+        
+        if edit_mode:
+            edit_events_message = f"Вчерашние события:\n{current_events}.\n\nОпишите события вчерашнего дня (или нажмите 'Пропустить'):"
+                
+            await event.respond(
+                edit_events_message,
+                buttons=get_events_keyboard(lang, edit_mode=True)
+            )
+        else:
+            await event.respond(
+                "Опишите события вчерашнего дня (или нажмите 'Пропустить'):",
+                buttons=get_events_keyboard(lang, edit_mode=False)
+            )
+    
+    elif state == FormState.WAITING_EVENTS:
+        # Определяем, это обычный ввод событий или специальный режим редактирования
+        edit_mode = user_form_data[user_id].get("edit_mode", False)
+        replace_mode = user_form_data[user_id].get("replace_mode", False)
+        append_mode = user_form_data[user_id].get("append_mode", False)
+        edit_text_mode = user_form_data[user_id].get("edit_text_mode", False)
+        
+        if replace_mode:
+            # Полностью заменяем текст
+            user_form_data[user_id]["events"] = event.text
+            user_form_data[user_id]["replace_mode"] = False
+        elif append_mode:
+            # Добавляем текст к существующему
+            current_events = user_form_data[user_id].get("events", "")
+            user_form_data[user_id]["events"] = f"{current_events}\n{event.text}" if current_events else event.text
+            user_form_data[user_id]["append_mode"] = False
+        elif edit_text_mode:
+            # Заменяем текст отредактированным
+            user_form_data[user_id]["events"] = event.text
+            user_form_data[user_id]["edit_text_mode"] = False
+        else:
+            # Обычный ввод текста событий
+            user_form_data[user_id]["events"] = event.text
+        
+        # Завершаем форму и сохраняем данные в БД
+        try:
+            from core.database.manager import DatabaseManager
+            from cfg.config_tlg import DAYLOG_DB_PATH
+            
+            db = DatabaseManager(db_path=DAYLOG_DB_PATH)
+            
+            # Собираем данные из формы
+            entry_date = user_form_data[user_id]["entry_date"]
+            mood = user_form_data[user_id].get("mood")
+            weather = user_form_data[user_id].get("weather")
+            location = user_form_data[user_id].get("location")
+            events = user_form_data[user_id].get("events", "")
+            
+            # Проверяем, существует ли уже запись за этот день
+            existing_entry = db.get_diary_entry(user_id, entry_date)
+            
+            if existing_entry:
+                # Обновляем существующую запись
+                success = db.update_diary_entry(
+                    user_id, 
+                    entry_date,
+                    mood=mood, 
+                    weather=weather, 
+                    location=location, 
+                    events=events
+                )
+                if success:
+                    await event.respond(tlgbot.i18n.t('yesterday_entry_updated', lang=lang) or "Запись за вчерашний день успешно обновлена!")
+                    # Отображаем содержимое обновленной записи
+                    await display_entry_content(event, user_id, entry_date, lang)
+                else:
+                    await event.respond(tlgbot.i18n.t('yesterday_entry_update_error', lang=lang) or "Ошибка обновления записи")
+            else:
+                # Создаем новую запись
+                created = db.create_diary_entry(
+                    user_id, 
+                    entry_date,
+                    mood=mood,
+                    weather=weather,
+                    location=location,
+                    events=events
+                )
+                if created:
+                    await event.respond(tlgbot.i18n.t('yesterday_entry_created', lang=lang) or "Новая запись за вчерашний день создана.")
+                    # Отображаем содержимое новой записи
+                    await display_entry_content(event, user_id, entry_date, lang)
+                else:
+                    await event.respond(tlgbot.i18n.t('yesterday_entry_error', lang=lang) or "Ошибка создания записи")
+            
+            # Очищаем данные пользователя
+            if user_id in user_states:
+                del user_states[user_id]
+            if user_id in user_form_data:
+                del user_form_data[user_id]
+            
+        except Exception as e:
+            import traceback
+            traceback_str = traceback.format_exc()
+            print(f"ERROR saving entry: {traceback_str}")
+            if edit_mode:
+                await event.respond(tlgbot.i18n.t('yesterday_entry_update_error', lang=lang) or f"Ошибка при обновлении записи: {str(e)}")
+            else:
+                await event.respond(tlgbot.i18n.t('yesterday_entry_error', lang=lang) or f"Ошибка при создании записи: {str(e)}")
+
+# Обработчик для редактирования записи
+@tlgbot.on(events.CallbackQuery(pattern="edit_yesterday"))
+@require_diary_user
+async def edit_yesterday_handler(event):
+    user_id = event.sender_id
+    user = getattr(tlgbot, 'settings', None).get_user(user_id) if getattr(tlgbot, 'settings', None) else None
+    lang = getattr(user, 'lang', None) or 'ru'
+    
+    try:
+        from core.database.manager import DatabaseManager
+        from cfg.config_tlg import DAYLOG_DB_PATH
+    except ImportError:
+        await event.edit(tlgbot.i18n.t('db_manager_import_error', lang=lang))
+        return
+
+    db = DatabaseManager(db_path=DAYLOG_DB_PATH)
+    yesterday_date = date.today() - timedelta(days=1)
+    entry = db.get_diary_entry(user_id, yesterday_date)
+    
+    if not entry:
+        await event.edit(tlgbot.i18n.t('entry_not_found', lang=lang) or "Запись не найдена.")
+        return
+    
+    # Инициализируем данные пользователя для редактирования
+    user_form_data[user_id] = {
+        "entry_date": yesterday_date,
+        "mood": entry.get("mood", ""),
+        "weather": entry.get("weather", ""),
+        "location": entry.get("location", ""),
+        "events": entry.get("events", ""),
+        "edit_mode": True  # Устанавливаем флаг режима редактирования
+    }
+    
+    # Начинаем мастер заполнения с первого шага - настроение
+    user_states[user_id] = FormState.WAITING_MOOD
+    
+    # Получаем текущее значение настроения безопасно
+    current_mood = user_form_data[user_id].get("mood", "")
+    if not current_mood:
+        current_mood = tlgbot.i18n.t('not_specified', lang=lang) or "Не указано"
+    
+    # Исправляем вызов метода локализации, передавая параметр mood напрямую
+    edit_mood_message = f"Вчерашнее настроение:\n\n{current_mood}\n\nВыберите новое настроение:"
+        
+    await event.edit(
+        edit_mood_message,
+        buttons=get_mood_keyboard(lang)
+    )
+
+# Обработчик для редактирования только событий
+@tlgbot.on(events.CallbackQuery(pattern="edit_yesterday_events"))
+@require_diary_user
+async def edit_yesterday_events_handler(event):
+    user_id = event.sender_id
+    user = getattr(tlgbot, 'settings', None).get_user(user_id) if getattr(tlgbot, 'settings', None) else None
+    lang = getattr(user, 'lang', None) or 'ru'
+    
+    try:
+        from core.database.manager import DatabaseManager
+        from cfg.config_tlg import DAYLOG_DB_PATH
+    except ImportError:
+        await event.edit(tlgbot.i18n.t('db_manager_import_error', lang=lang))
+        return
+
+    db = DatabaseManager(db_path=DAYLOG_DB_PATH)
+    yesterday_date = date.today() - timedelta(days=1)
+    entry = db.get_diary_entry(user_id, yesterday_date)
+    
+    if not entry:
+        await event.edit(tlgbot.i18n.t('entry_not_found', lang=lang) or "Запись не найдена.")
+        return
+    
+    # Инициализируем данные пользователя для редактирования только событий
+    user_form_data[user_id] = {
+        "entry_date": yesterday_date,
+        "mood": entry.get("mood", ""),
+        "weather": entry.get("weather", ""),
+        "location": entry.get("location", ""),
+        "events": entry.get("events", ""),
+        "edit_mode": True  # Устанавливаем флаг режима редактирования
+    }
+    
+    # Переходим сразу к редактированию событий
+    user_states[user_id] = FormState.WAITING_EVENTS
+    
+    # Получаем текущее значение событий безопасно
+    current_events = user_form_data[user_id].get("events", "")
+    if not current_events:
+        current_events = tlgbot.i18n.t('not_specified', lang=lang) or "Не указано"
+    
+    # Исправляем вызов метода локализации, передавая параметр events напрямую
+    edit_events_message = f"Вчерашние события:\n{current_events}.\n\nОпишите события вчерашнего дня (или нажмите 'Пропустить'):"
+    
+    await event.edit(
+        edit_events_message,
+        buttons=get_events_keyboard(lang, edit_mode=True)
+    )
+
+# Обработчик для отмены редактирования
+@tlgbot.on(events.CallbackQuery(pattern="cancel_edit_yesterday"))
+@require_diary_user
+async def cancel_edit_yesterday_handler(event):
+    user_id = event.sender_id
+    user = getattr(tlgbot, 'settings', None).get_user(user_id) if getattr(tlgbot, 'settings', None) else None
+    lang = getattr(user, 'lang', None) or 'ru'
+    
+    # Очищаем данные пользователя
+    if user_id in user_states:
+        del user_states[user_id]
+    if user_id in user_form_data:
+        del user_form_data[user_id]
+    
+    await event.edit(tlgbot.i18n.t('edit_canceled', lang=lang) or "Редактирование отменено.")
