@@ -1,0 +1,160 @@
+# Плагин для команды /view с возможностью просмотра записей по дате
+
+from datetime import datetime, date
+import re
+from telethon import events
+from bot.require_diary_user import require_diary_user
+
+# tlgbot глобально доступен в плагинах через динамическую загрузку
+tlgbot = globals().get('tlgbot')
+# Логгер доступен через глобальные переменные
+logger = globals().get('logger')
+
+async def parse_date(date_str):
+    """
+    Парсит дату из строки в формате DD.MM.YYYY или DD.MM
+    Возвращает объект datetime.date или None, если парсинг не удался
+    """
+    try:
+        # Регулярное выражение для формата DD.MM.YYYY
+        full_date_pattern = r'^(\d{1,2})\.(\d{1,2})\.(\d{4})$'
+        # Регулярное выражение для формата DD.MM
+        short_date_pattern = r'^(\d{1,2})\.(\d{1,2})$'
+        
+        full_match = re.match(full_date_pattern, date_str)
+        short_match = re.match(short_date_pattern, date_str)
+        
+        if full_match:
+            day, month, year = map(int, full_match.groups())
+            return date(year, month, day)
+        elif short_match:
+            day, month = map(int, short_match.groups())
+            current_year = datetime.now().year
+            return date(current_year, month, day)
+        else:
+            return None
+    except ValueError as e:
+        logger.warning(f"Ошибка парсинга даты '{date_str}': {e}")
+        return None
+
+async def get_entry_by_date(user_id, entry_date):
+    """
+    Получает запись из базы данных по дате
+    """
+    try:
+        # Получаем экземпляр менеджера БД
+        from core.database.manager import DatabaseManager
+        db_manager = DatabaseManager()
+        
+        # Преобразуем date в строку формата YYYY-MM-DD для запроса к БД
+        date_str = entry_date.strftime("%Y-%m-%d")
+        
+        # Запрос записи из БД
+        entry = db_manager.get_diary_entry(user_id, date_str)
+        logger.debug(f"Поиск записи для пользователя {user_id} за дату {date_str}: {entry}")
+        
+        return entry
+    except Exception as e:
+        logger.error(f"Ошибка при получении записи из БД: {e}")
+        return None
+
+async def display_entry(event, entry, display_date):
+    """
+    Форматирует и отображает запись пользователю
+    """
+    user_id = event.sender_id
+    user = getattr(tlgbot, 'settings', None).get_user(user_id) if getattr(tlgbot, 'settings', None) else None
+    lang = getattr(user, 'lang', None) or 'ru'
+    
+    try:
+        # Форматируем дату для отображения
+        date_formatted = display_date.strftime("%d.%m.%Y")
+        
+        # Получаем данные из записи
+        mood = entry.get("mood") or tlgbot.i18n.t('not_specified', lang=lang) or "Не указано"
+        weather = entry.get("weather") or tlgbot.i18n.t('not_specified', lang=lang) or "Не указано"
+        location = entry.get("location") or tlgbot.i18n.t('not_specified', lang=lang) or "Не указано"
+        events = entry.get("events") or tlgbot.i18n.t('not_specified', lang=lang) or "Не указано"
+        
+        # Формируем сообщение
+        message = tlgbot.i18n.t('entry_header', lang=lang, date=date_formatted) or f"📝 **Запись от {date_formatted}**\n\n"
+        message += (tlgbot.i18n.t('entry_mood', lang=lang, mood=mood) or f"😊 Настроение: {mood}") + "\n"
+        message += (tlgbot.i18n.t('entry_weather', lang=lang, weather=weather) or f"🌤 Погода: {weather}") + "\n"
+        message += (tlgbot.i18n.t('entry_location', lang=lang, location=location) or f"📍 Местоположение: {location}") + "\n"
+        message += (tlgbot.i18n.t('entry_events', lang=lang, events=events) or f"📌 События: {events}") + "\n"
+        
+        await event.respond(message, parse_mode='markdown')
+    except Exception as e:
+        import traceback
+        traceback_str = traceback.format_exc()
+        logger.error(f"Ошибка при отображении записи: {traceback_str}")
+        await event.respond(f"Ошибка при отображении записи: {str(e)}")
+
+@tlgbot.on(events.NewMessage(pattern=r'^/view(?:\s+(\S+))?'))
+@require_diary_user
+async def view_command_handler(event):
+    """
+    Обработчик команды /view
+    Принимает опциональный аргумент - дату в формате DD.MM.YYYY или DD.MM
+    Если дата не указана, используется текущая дата
+    """
+    user_id = event.sender_id
+    user = getattr(tlgbot, 'settings', None).get_user(user_id) if getattr(tlgbot, 'settings', None) else None
+    lang = getattr(user, 'lang', None) or 'ru'
+    
+    try:
+        # Получаем аргумент команды (дату)
+        command_text = event.message.text.strip()
+        parts = command_text.split(maxsplit=1)
+        
+        # Определяем дату для поиска
+        target_date = None
+        if len(parts) > 1 and parts[1]:
+            # Пользователь указал дату
+            date_str = parts[1].strip()
+            target_date = await parse_date(date_str)
+            
+            if not target_date:
+                # Не удалось распарсить дату
+                error_msg = tlgbot.i18n.t('invalid_date_format', lang=lang) or f"Неверный формат даты. Используйте ДД.ММ.ГГГГ или ДД.ММ."
+                await event.respond(error_msg)
+                return
+        else:
+            # Дата не указана, используем текущую дату
+            target_date = date.today()
+        
+        # Получаем запись из БД
+        entry = await get_entry_by_date(user_id, target_date)
+        
+        if entry:
+            # Запись найдена, отображаем пользователю
+            await display_entry(event, entry, target_date)
+        else:
+            # Запись не найдена
+            date_formatted = target_date.strftime("%d.%m.%Y")
+            not_found_msg = tlgbot.i18n.t('view_entry_not_found', lang=lang, date=date_formatted) or f"Запись за {date_formatted} не найдена."
+            await event.respond(not_found_msg)
+    
+    except Exception as e:
+        import traceback
+        traceback_str = traceback.format_exc()
+        logger.error(f"Ошибка при выполнении команды /view: {traceback_str}")
+        await event.respond(f"Произошла ошибка: {str(e)}")
+
+# Добавляем обработчик для команды /help, чтобы включить информацию о команде /view
+@tlgbot.on(events.NewMessage(pattern=r'^/view_help$'))
+async def view_help_handler(event):
+    user_id = event.sender_id
+    user = getattr(tlgbot, 'settings', None).get_user(user_id) if getattr(tlgbot, 'settings', None) else None
+    lang = getattr(user, 'lang', None) or 'ru'
+    
+    help_text = tlgbot.i18n.t('view_command_help', lang=lang) or """
+Команда /view позволяет просмотреть запись дневника за указанную дату.
+
+Использование:
+/view - просмотр записи за текущую дату
+/view ДД.ММ.ГГГГ - просмотр записи за указанную дату
+/view ДД.ММ - просмотр записи за указанную дату текущего года
+    """
+    
+    await event.respond(help_text.strip())
