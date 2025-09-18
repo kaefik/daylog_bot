@@ -21,6 +21,40 @@ class FormState(str, Enum):
 user_states = {}
 user_form_data = {}
 
+# Функция для отображения содержимого записи
+async def display_entry_content(event, user_id, entry_date, lang="ru"):
+    try:
+        from core.database.manager import DatabaseManager
+        from cfg.config_tlg import DAYLOG_DB_PATH
+        
+        db = DatabaseManager(db_path=DAYLOG_DB_PATH)
+        entry = db.get_diary_entry(user_id, entry_date)
+        
+        if not entry:
+            await event.respond(tlgbot.i18n.t('entry_not_found', lang=lang) or "Запись не найдена.")
+            return
+            
+        # Формируем сообщение с содержимым записи
+        mood = entry.get("mood") or tlgbot.i18n.t('not_specified', lang=lang) or "Не указано"
+        weather = entry.get("weather") or tlgbot.i18n.t('not_specified', lang=lang) or "Не указано"
+        location = entry.get("location") or tlgbot.i18n.t('not_specified', lang=lang) or "Не указано"
+        events = entry.get("events") or tlgbot.i18n.t('not_specified', lang=lang) or "Не указано"
+        
+        # Используем локализованные строки для каждой части сообщения
+        date_str = str(entry_date)
+        message = (tlgbot.i18n.t('entry_title', lang=lang, date=date_str) or f"📝 Запись от {date_str}") + "\n\n"
+        message += (tlgbot.i18n.t('entry_mood', lang=lang, mood=mood) or f"🙂 Настроение: {mood}") + "\n"
+        message += (tlgbot.i18n.t('entry_weather', lang=lang, weather=weather) or f"🌤 Погода: {weather}") + "\n"
+        message += (tlgbot.i18n.t('entry_location', lang=lang, location=location) or f"📍 Местоположение: {location}") + "\n"
+        message += (tlgbot.i18n.t('entry_events', lang=lang, events=events) or f"📌 События: {events}") + "\n"
+        
+        await event.respond(message, parse_mode='markdown')
+    except Exception as e:
+        import traceback
+        traceback_str = traceback.format_exc()
+        print(f"ERROR displaying entry: {traceback_str}")
+        await event.respond(f"Ошибка при отображении записи: {str(e)}")
+
 # Inline-клавиатуры для каждого поля
 def get_mood_keyboard(lang="ru"):
     return [
@@ -430,6 +464,8 @@ async def events_callback_handler(event):
             
             if success:
                 await event.edit(tlgbot.i18n.t('today_entry_updated', lang=lang) or "Запись за сегодня успешно обновлена!")
+                # Отображаем содержимое обновленной записи
+                await display_entry_content(event, user_id, form_data["entry_date"], lang)
             else:
                 await event.edit(tlgbot.i18n.t('today_entry_update_error', lang=lang) or "Ошибка обновления записи")
         else:
@@ -445,6 +481,8 @@ async def events_callback_handler(event):
             
             if created:
                 await event.edit(tlgbot.i18n.t('today_entry_created', lang=lang) or "Запись за сегодня создана успешно!")
+                # Отображаем содержимое новой записи
+                await display_entry_content(event, user_id, form_data["entry_date"], lang)
             else:
                 await event.edit(tlgbot.i18n.t('today_entry_error', lang=lang) or "Ошибка создания записи")
         
@@ -581,6 +619,8 @@ async def handle_manual_input(event):
                 
                 if success:
                     await event.reply(tlgbot.i18n.t('today_entry_updated', lang=lang) or "Запись за сегодня успешно обновлена!")
+                    # Отображаем содержимое обновленной записи
+                    await display_entry_content(event, user_id, form_data["entry_date"], lang)
                 else:
                     await event.reply(tlgbot.i18n.t('today_entry_update_error', lang=lang) or "Ошибка обновления записи")
             else:
@@ -596,6 +636,8 @@ async def handle_manual_input(event):
                 
                 if created:
                     await event.reply(tlgbot.i18n.t('today_entry_created', lang=lang) or "Запись за сегодня создана успешно!")
+                    # Отображаем содержимое новой записи
+                    await display_entry_content(event, user_id, form_data["entry_date"], lang)
                 else:
                     await event.reply(tlgbot.i18n.t('today_entry_error', lang=lang) or "Ошибка создания записи")
             

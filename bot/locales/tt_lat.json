@@ -90,9 +90,59 @@
     "db_diary_exists": "Köndälek bazası inde bar.",
     "diary_user_required": "Sez köndälekkä terkälmägänsez. Başta /start komandasin başqarıgız.",
     "today_entry_exists": "Bügenge yazma inde bar.",
+    "today_entry_exists_edit": "Bügenge yazma inde bar. Anı möxärrirlärgä teläysezme?",
     "today_entry_created": "Bügenge yaña yazma buldyrıldı.",
+    "today_entry_updated": "Bügenge yazma uñışlı yañartıldı!",
     "today_entry_error": "Yazma buldıru xatası.",
+    "today_entry_update_error": "Yazmanı yañartu xatası.",
     "db_manager_import_error": "DatabaseManager importlaw xatası.",
     "db_path_import_error": "config_tlg-tan DAYLOG_DB_PATH importlaw xatası.",
-    "diary_user_already_exists": "Sez köndälekkä inde terkälgänsez!"
+    "diary_user_already_exists": "Sez köndälekkä inde terkälgänsez!",
+
+    "today_mood_prompt": "Bügen käyefegez niçek?",
+    "today_weather_prompt": "Bügen hava torışı niçek?",
+    "today_location_prompt": "Sez qayda urnaşqansız?",
+    "today_events_prompt": "Kön vaqıyğaların tasvirlağız (yäki 'Töşerep qaldıru' töymäsenä basıgız):",
+    "today_weather_manual": "Hava torışın yazıp kertegez:",
+    "today_location_manual": "Urınlaşuıgıznı yazıp kertegez:",
+    
+    "mood_excellent": "Bik yaxşı",
+    "mood_good": "Yaxşı",
+    "mood_normal": "Normal",
+    "mood_bad": "Naçar",
+    "mood_terrible": "Bik naçar",
+    
+    "weather_sunny": "Qoyaşlı",
+    "weather_cloudy": "Bolıtlı",
+    "weather_rainy": "Yañgır",
+    "weather_snowy": "Qar",
+    "weather_foggy": "Toman",
+    
+    "location_home": "Öy",
+    "location_work": "Eş",
+    "location_street": "Uram",
+    
+    "btn_skip": "Töşerep qaldıru",
+    "btn_back": "Kire",
+    "btn_manual": "Qul belän kertü",
+    
+    "form_invalid_state": "Formanıñ döres bulmağan torışı",
+    "form_first_step": "Bu berenche adım",
+    
+    "btn_edit": "Möxärrirläw",
+    "btn_cancel": "Baş tartu",
+    "edit_canceled": "Möxärrirläwdän baş tartıldı.",
+    "entry_not_found": "Yazma tabılmadı.",
+    "not_specified": "Kürsätelmägän",
+    
+    "edit_mood_prompt": "Xäzerge käyef: {mood}. Yaña käyef saylağız:",
+    "edit_weather_prompt": "Xäzerge hava torışı: {weather}. Yaña hava torışı saylağız:",
+    "edit_location_prompt": "Xäzerge urınlaşu: {location}. Yaña urınlaşu saylağız:",
+    "edit_events_prompt": "Xäzerge vaqıyğalar: {events}. Yaña kön vaqıyğaların tasvirlağız (yäki 'Töşerep qaldıru' töymäsenä basıgız):",
+    
+    "entry_title": "📝 {date} yazması",
+    "entry_mood": "🙂 Käyef: {mood}",
+    "entry_weather": "🌤 Hava torışı: {weather}",
+    "entry_location": "📍 Urınlaşu: {location}",
+    "entry_events": "📌 Vaqıyğalar: {events}"
 }

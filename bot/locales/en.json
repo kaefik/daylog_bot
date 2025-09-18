@@ -136,5 +136,11 @@
     "edit_mood_prompt": "Current mood: {mood}. Choose a new mood:",
     "edit_weather_prompt": "Current weather: {weather}. Choose a new weather:",
     "edit_location_prompt": "Current location: {location}. Choose a new location:",
-    "edit_events_prompt": "Current events: {events}. Describe new events of the day (or click 'Skip'):"
+    "edit_events_prompt": "Current events: {events}. Describe new events of the day (or click 'Skip'):",
+    
+    "entry_title": "📝 Entry from {date}",
+    "entry_mood": "🙂 Mood: {mood}",
+    "entry_weather": "🌤 Weather: {weather}",
+    "entry_location": "📍 Location: {location}",
+    "entry_events": "📌 Events: {events}"
 }
