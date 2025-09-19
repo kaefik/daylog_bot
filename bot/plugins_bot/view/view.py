@@ -1,8 +1,9 @@
 # Плагин для команды /view с возможностью просмотра записей по дате
 
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
+import calendar
 import re
-from telethon import events
+from telethon import events, Button
 from bot.require_diary_user import require_diary_user
 
 # tlgbot глобально доступен в плагинах через динамическую загрузку
@@ -99,6 +100,120 @@ async def get_entries_by_day_month(user_id, day, month):
         logger.error(f"Ошибка при получении записей из БД: {e}")
         return []
 
+async def get_entries_by_period(user_id, start_date, end_date):
+    """
+    Получает записи из базы данных за указанный период
+    """
+    try:
+        # Получаем экземпляр менеджера БД
+        from core.database.manager import DatabaseManager
+        from cfg.config_tlg import DAYLOG_DB_PATH
+        
+        # Создаем экземпляр DB с явным указанием пути к БД
+        db_manager = DatabaseManager(db_path=DAYLOG_DB_PATH)
+        
+        # Логирование
+        logger.debug(f"Searching entries for user_id={user_id}, period={start_date} to {end_date}")
+        
+        # Получаем записи за период
+        entries = db_manager.get_entries_by_period(user_id, start_date, end_date)
+        
+        logger.debug(f"Найдено {len(entries)} записей за период")
+        
+        return entries
+    except Exception as e:
+        logger.error(f"Ошибка при получении записей из БД за период: {e}")
+        return []
+
+def get_week_dates():
+    """
+    Возвращает начальную и конечную даты текущей недели
+    Неделя считается с понедельника по воскресенье
+    """
+    today = date.today()
+    # Получаем номер дня недели (0 - понедельник, 6 - воскресенье)
+    weekday = today.weekday()
+    # Начало недели (понедельник)
+    start_of_week = today - timedelta(days=weekday)
+    # Конец недели (воскресенье)
+    end_of_week = start_of_week + timedelta(days=6)
+    
+    return start_of_week, end_of_week
+
+def get_month_dates():
+    """
+    Возвращает начальную и конечную даты текущего месяца
+    """
+    today = date.today()
+    # Первый день месяца
+    start_of_month = date(today.year, today.month, 1)
+    # Последний день месяца
+    _, last_day = calendar.monthrange(today.year, today.month)
+    end_of_month = date(today.year, today.month, last_day)
+    
+    return start_of_month, end_of_month
+
+async def display_period_entries(event, entries, period_name):
+    """
+    Форматирует и отображает записи за период
+    """
+    user_id = event.sender_id
+    user = getattr(tlgbot, 'settings', None).get_user(user_id) if getattr(tlgbot, 'settings', None) else None
+    lang = getattr(user, 'lang', None) or 'ru'
+    
+    try:
+        if not entries:
+            await event.respond(tlgbot.i18n.t('view_entries_not_found_period', lang=lang, period=period_name) or f"Записи за {period_name} не найдены.")
+            return
+        
+        # Сортируем записи по дате (от новых к старым)
+        sorted_entries = sorted(entries, key=lambda x: x.get('entry_date'), reverse=True)
+        
+        # Формируем заголовок с информацией о периоде
+        header = tlgbot.i18n.t('entries_for_period', lang=lang, period=period_name) or f"📅 **Записи за {period_name}**\n\n"
+        await event.respond(header, parse_mode='markdown')
+        
+        # Отправляем каждую запись отдельным сообщением
+        for entry in sorted_entries:
+            # Получаем дату записи (может быть объектом date или строкой)
+            entry_date = entry.get('entry_date')
+            if isinstance(entry_date, str):
+                # Если это строка в формате ISO, преобразуем в date
+                entry_date = datetime.fromisoformat(entry_date).date()
+            # Если это уже объект date, то используем как есть
+            
+            await display_entry(event, entry, entry_date)
+    
+    except Exception as e:
+        import traceback
+        traceback_str = traceback.format_exc()
+        logger.error(f"Ошибка при отображении записей за период: {traceback_str}")
+        await event.respond(f"Ошибка при отображении записей: {str(e)}")
+
+async def show_period_selection(event):
+    """
+    Показывает кнопки выбора периода для просмотра записей
+    """
+    user_id = event.sender_id
+    user = getattr(tlgbot, 'settings', None).get_user(user_id) if getattr(tlgbot, 'settings', None) else None
+    lang = getattr(user, 'lang', None) or 'ru'
+    
+    message = tlgbot.i18n.t('view_select_period', lang=lang) or "Выберите период для просмотра записей:"
+    
+    # Создаем кнопки выбора периода
+    buttons = [
+        [
+            Button.inline(tlgbot.i18n.t('view_today', lang=lang) or "Сегодня", data="view_period_today"),
+            Button.inline(tlgbot.i18n.t('view_week', lang=lang) or "Текущая неделя", data="view_period_week")
+        ],
+        [
+            Button.inline(tlgbot.i18n.t('view_month', lang=lang) or "Текущий месяц", data="view_period_month"),
+            Button.inline(tlgbot.i18n.t('view_custom', lang=lang) or "Другая дата", data="view_period_custom")
+        ]
+    ]
+    
+    await event.respond(message, buttons=buttons)
+
 async def display_entry(event, entry, display_date):
     """
     Форматирует и отображает запись пользователю
@@ -147,8 +262,13 @@ async def display_multiple_entries(event, entries):
         # Сортируем записи по дате (от новых к старым)
         sorted_entries = sorted(entries, key=lambda x: x.get('entry_date'), reverse=True)
         
-        # Формируем заголовок с информацией о дне и месяце
-        sample_date = datetime.fromisoformat(sorted_entries[0].get('entry_date')).date()
+        # Получаем образец даты для заголовка
+        sample_date_value = sorted_entries[0].get('entry_date')
+        if isinstance(sample_date_value, str):
+            sample_date = datetime.fromisoformat(sample_date_value).date()
+        else:
+            sample_date = sample_date_value
+            
         date_formatted = sample_date.strftime("%d.%m")
         
         header = tlgbot.i18n.t('entries_for_date', lang=lang, date=date_formatted) or f"📅 **Записи за {date_formatted} (все годы)**\n\n"
@@ -156,7 +276,13 @@ async def display_multiple_entries(event, entries):
         
         # Отправляем каждую запись отдельным сообщением
         for entry in sorted_entries:
-            entry_date = datetime.fromisoformat(entry.get('entry_date')).date()
+            # Получаем дату записи (может быть объектом date или строкой)
+            entry_date = entry.get('entry_date')
+            if isinstance(entry_date, str):
+                # Если это строка в формате ISO, преобразуем в date
+                entry_date = datetime.fromisoformat(entry_date).date()
+            # Если это уже объект date, то используем как есть
+            
             await display_entry(event, entry, entry_date)
     
     except Exception as e:
@@ -174,7 +300,7 @@ async def view_command_handler(event):
     - DD.MM.YYYY - конкретная дата
     - DD.MM - дата в текущем году
     - DD.MM.* - дата во всех годах
-    Если дата не указана, используется текущая дата
+    Если дата не указана, выводится меню выбора периода
     """
     user_id = event.sender_id
     user = getattr(tlgbot, 'settings', None).get_user(user_id) if getattr(tlgbot, 'settings', None) else None
@@ -206,9 +332,9 @@ async def view_command_handler(event):
                 await event.respond(error_msg)
                 return
         else:
-            # Дата не указана, используем текущую дату
-            target_date = date.today()
-            logger.debug(f"No date provided, using today: {target_date}")
+            # Дата не указана, показываем меню выбора периода
+            await show_period_selection(event)
+            return
         
         # В зависимости от типа запроса, выполняем соответствующий поиск
         if day_month_all_years:
@@ -243,6 +369,81 @@ async def view_command_handler(event):
         logger.error(f"Ошибка при выполнении команды /view: {traceback_str}")
         await event.respond(f"Произошла ошибка: {str(e)}")
 
+@tlgbot.on(events.CallbackQuery(pattern=r"view_period_.*"))
+@require_diary_user
+async def view_period_handler(event):
+    """
+    Обработчик кнопок выбора периода
+    """
+    user_id = event.sender_id
+    user = getattr(tlgbot, 'settings', None).get_user(user_id) if getattr(tlgbot, 'settings', None) else None
+    lang = getattr(user, 'lang', None) or 'ru'
+    
+    # Получаем выбранный период из данных кнопки
+    period = event.data.decode('utf-8').replace('view_period_', '')
+    
+    try:
+        # Отвечаем на коллбэк, чтобы убрать индикатор загрузки с кнопки
+        await event.answer()
+        
+        if period == 'today':
+            # Показываем запись за сегодня
+            today = date.today()
+            entry = await get_entry_by_date(user_id, today)
+            
+            if entry:
+                await display_entry(event, entry, today)
+            else:
+                date_formatted = today.strftime("%d.%m.%Y")
+                not_found_msg = tlgbot.i18n.t('view_entry_not_found', lang=lang, date=date_formatted) or f"Запись за {date_formatted} не найдена."
+                await event.respond(not_found_msg)
+                
+        elif period == 'week':
+            # Показываем записи за текущую неделю
+            start_of_week, end_of_week = get_week_dates()
+            
+            # Получаем записи за неделю
+            entries = await get_entries_by_period(user_id, start_of_week, end_of_week)
+            
+            # Формируем название периода для отображения
+            period_name = tlgbot.i18n.t('current_week', lang=lang) or "текущую неделю"
+            
+            # Отображаем результаты
+            await display_period_entries(event, entries, period_name)
+            
+        elif period == 'month':
+            # Показываем записи за текущий месяц
+            start_of_month, end_of_month = get_month_dates()
+            
+            # Получаем записи за месяц
+            entries = await get_entries_by_period(user_id, start_of_month, end_of_month)
+            
+            # Формируем название периода для отображения
+            month_names = ["январь", "февраль", "март", "апрель", "май", "июнь", 
+                         "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь"]
+            current_month = month_names[date.today().month - 1]
+            period_name = tlgbot.i18n.t('current_month', lang=lang, month=current_month) or f"текущий месяц ({current_month})"
+            
+            # Отображаем результаты
+            await display_period_entries(event, entries, period_name)
+            
+        elif period == 'custom':
+            # Показываем сообщение о том, как указать произвольную дату
+            message = tlgbot.i18n.t('view_custom_help', lang=lang) or """
+Для просмотра записей за произвольную дату используйте следующие форматы:
+
+/view ДД.ММ.ГГГГ - просмотр записи за конкретную дату
+/view ДД.ММ - просмотр записи за указанную дату текущего года
+/view ДД.ММ.* - просмотр записей за указанную дату всех лет
+            """
+            await event.respond(message.strip())
+    
+    except Exception as e:
+        import traceback
+        traceback_str = traceback.format_exc()
+        logger.error(f"Ошибка при обработке выбора периода: {traceback_str}")
+        await event.respond(f"Произошла ошибка: {str(e)}")
+
 # Добавляем обработчик для команды /help, чтобы включить информацию о команде /view
 @tlgbot.on(events.NewMessage(pattern=r'^/view_help$'))
 async def view_help_handler(event):
@@ -251,10 +452,10 @@ async def view_help_handler(event):
     lang = getattr(user, 'lang', None) or 'ru'
     
     help_text = tlgbot.i18n.t('view_command_help', lang=lang) or """
-Команда /view позволяет просмотреть запись дневника за указанную дату.
+Команда /view позволяет просмотреть записи дневника.
 
 Использование:
-/view - просмотр записи за текущую дату
+/view - выбор периода для просмотра (сегодня, неделя, месяц)
 /view ДД.ММ.ГГГГ - просмотр записи за указанную дату
 /view ДД.ММ - просмотр записи за указанную дату текущего года
 /view ДД.ММ.* - просмотр записей за указанную дату всех лет
