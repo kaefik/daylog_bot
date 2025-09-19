@@ -73,6 +73,7 @@ def get_mood_keyboard(lang="ru"):
         ],
         [
             Button.inline(tlgbot.i18n.t('btn_skip', lang=lang) or "Пропустить", data=f"mood_skip"),
+            Button.inline(tlgbot.i18n.t('btn_cancel', lang=lang) or "Отмена", data=f"cancel_creation"),
         ]
     ]
 
@@ -93,6 +94,7 @@ def get_weather_keyboard(lang="ru"):
         [
             Button.inline(tlgbot.i18n.t('btn_skip', lang=lang) or "Пропустить", data=f"weather_skip"),
             Button.inline(tlgbot.i18n.t('btn_back', lang=lang) or "Назад", data=f"weather_back"),
+            Button.inline(tlgbot.i18n.t('btn_cancel', lang=lang) or "Отмена", data=f"cancel_creation"),
         ]
     ]
 
@@ -109,6 +111,7 @@ def get_location_keyboard(lang="ru"):
         [
             Button.inline(tlgbot.i18n.t('btn_skip', lang=lang) or "Пропустить", data=f"location_skip"),
             Button.inline(tlgbot.i18n.t('btn_back', lang=lang) or "Назад", data=f"location_back"),
+            Button.inline(tlgbot.i18n.t('btn_cancel', lang=lang) or "Отмена", data=f"cancel_creation"),
         ]
     ]
 
@@ -117,6 +120,7 @@ def get_events_keyboard(lang="ru", edit_mode=False):
         [
             Button.inline(tlgbot.i18n.t('btn_skip', lang=lang) or "Пропустить", data="events_skip"),
             Button.inline(tlgbot.i18n.t('btn_back', lang=lang) or "Назад", data="events_back"),
+            Button.inline(tlgbot.i18n.t('btn_cancel', lang=lang) or "Отмена", data="cancel_creation"),
         ]
     ]
     
@@ -282,7 +286,10 @@ async def weather_callback_handler(event):
     if choice == "manual":
         # Устанавливаем флаг ожидания ручного ввода погоды
         user_form_data[user_id]["waiting_manual_weather"] = True
-        await event.edit(tlgbot.i18n.t('today_weather_manual', lang=lang) or "Введите описание погоды:")
+        await event.edit(
+            (tlgbot.i18n.t('today_weather_manual', lang=lang) or "Введите описание погоды:") + 
+            "\n\n" + (tlgbot.i18n.t('type_cancel_to_abort', lang=lang) or "Напишите 'отмена' для отмены создания записи.")
+        )
         # Не переходим к следующему шагу, ждем ввода
         return
     elif choice != "skip":
@@ -363,7 +370,10 @@ async def location_callback_handler(event):
     if choice == "manual":
         # Устанавливаем флаг ожидания ручного ввода местоположения
         user_form_data[user_id]["waiting_manual_location"] = True
-        await event.edit(tlgbot.i18n.t('today_location_manual', lang=lang) or "Введите ваше местоположение:")
+        await event.edit(
+            (tlgbot.i18n.t('today_location_manual', lang=lang) or "Введите ваше местоположение:") + 
+            "\n\n" + (tlgbot.i18n.t('type_cancel_to_abort', lang=lang) or "Напишите 'отмена' для отмены создания записи.")
+        )
         # Не переходим к следующему шагу, ждем ввода
         return
     elif choice != "skip":
@@ -462,7 +472,7 @@ async def events_callback_handler(event):
         if not replace_message:
             replace_message = f"Текущие события:\n\"{current_events}\"\n\nВведите новый текст, который полностью заменит текущий:"
             
-        await event.edit(replace_message)
+        await event.edit(replace_message + "\n\n" + (tlgbot.i18n.t('type_cancel_to_abort', lang=lang) or "Напишите 'отмена' для отмены создания записи."))
         # Ожидаем ввод пользователя, который будет обработан в handle_manual_input
         return
         
@@ -475,7 +485,7 @@ async def events_callback_handler(event):
         if not append_message:
             append_message = f"Текущие события:\n\"{current_events}\"\n\nВведите текст, который будет добавлен к текущему:"
             
-        await event.edit(append_message)
+        await event.edit(append_message + "\n\n" + (tlgbot.i18n.t('type_cancel_to_abort', lang=lang) or "Напишите 'отмена' для отмены создания записи."))
         # Ожидаем ввод пользователя, который будет обработан в handle_manual_input
         return
         
@@ -496,7 +506,7 @@ async def events_callback_handler(event):
         # поэтому мы просто показываем сообщение с текущим текстом,
         # который пользователь может скопировать и отредактировать
         
-        await event.edit(edit_message)
+        await event.edit(edit_message + "\n\n" + (tlgbot.i18n.t('type_cancel_to_abort', lang=lang) or "Напишите 'отмена' для отмены создания записи."))
         
         # Отправляем второе сообщение только с текстом событий, чтобы пользователю было легче скопировать
         await event.respond(current_events)
@@ -598,6 +608,18 @@ async def handle_manual_input(event):
     # Проверяем, есть ли у нас команда (начинается с /)
     if text.startswith('/'):
         # Это команда, не обрабатываем ее здесь
+        return
+        
+    # Проверяем, ввёл ли пользователь команду отмены
+    if text.lower() in ['отмена', 'cancel', '/cancel']:
+        # Очищаем данные пользователя
+        if user_id in user_states:
+            del user_states[user_id]
+        if user_id in user_form_data:
+            del user_form_data[user_id]
+        
+        # Сообщаем об отмене
+        await event.reply(tlgbot.i18n.t('creation_canceled', lang=lang) or "👌 Создание записи отменено. Данные не сохранены.")
         return
     
     # Проверяем ожидание ручного ввода погоды
@@ -748,6 +770,23 @@ async def handle_manual_input(event):
         except Exception as e:
             await event.reply(f"Ошибка: {str(e)}")
 
+# Обработчик для отмены создания/редактирования записи на любом этапе
+@tlgbot.on(events.CallbackQuery(pattern="cancel_creation"))
+async def cancel_creation_handler(event):
+    user_id = event.sender_id
+    user = getattr(tlgbot, 'settings', None).get_user(user_id) if getattr(tlgbot, 'settings', None) else None
+    lang = getattr(user, 'lang', None) or 'ru'
+    
+    # Очищаем данные пользователя
+    if user_id in user_states:
+        del user_states[user_id]
+    if user_id in user_form_data:
+        del user_form_data[user_id]
+    
+    # Сообщаем об отмене
+    await event.edit(tlgbot.i18n.t('creation_canceled', lang=lang) or "👌 Создание записи отменено. Данные не сохранены.")
+    return
+
 # Обработчик для кнопок редактирования существующей записи
 @tlgbot.on(events.CallbackQuery(pattern="edit_today|edit_today_events|cancel_edit_today"))
 async def edit_today_handler(event):
@@ -759,7 +798,7 @@ async def edit_today_handler(event):
     
     if data == "cancel_edit_today":
         # Пользователь отменил редактирование
-        await event.edit(tlgbot.i18n.t('edit_canceled', lang=lang) or "Редактирование отменено.")
+        await event.edit(tlgbot.i18n.t('edit_canceled', lang=lang) or "👌 Редактирование отменено. Запись осталась без изменений.")
         return
     
     # Начинаем редактирование
