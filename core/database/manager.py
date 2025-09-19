@@ -273,6 +273,42 @@ class DatabaseManager:
         except sqlite3.Error as e:
             logger.error(f"Ошибка получения записи {entry_date}: {e}")
             return None
+            
+    def get_diary_entries_by_day_month(self, user_id: int, day: int, month: int) -> List[Dict]:
+        """Получение записей дневника по дню и месяцу для всех годов"""
+        try:
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+                
+                # Используем strftime для выделения дня и месяца из даты
+                cursor.execute('''
+                    SELECT * FROM diary_entries 
+                    WHERE user_id = ? 
+                    AND strftime('%d', entry_date) = ? 
+                    AND strftime('%m', entry_date) = ?
+                    ORDER BY entry_date DESC
+                ''', (user_id, f"{day:02d}", f"{month:02d}"))
+                
+                rows = cursor.fetchall()
+                entries = []
+                
+                # Преобразуем строки в словари
+                for row in rows:
+                    entry = dict(row)
+                    
+                    # Заполняем пустые поля
+                    required_fields = ["mood", "weather", "location", "events"]
+                    for field in required_fields:
+                        if field not in entry or entry[field] is None:
+                            entry[field] = ""
+                    
+                    entries.append(entry)
+                
+                return entries
+                
+        except sqlite3.Error as e:
+            logger.error(f"Ошибка получения записей по дню {day} и месяцу {month}: {e}")
+            return []
 
     def update_diary_entry(self, user_id: int, entry_date: date, **kwargs) -> bool:
         """Обновление существующей записи дневника"""
