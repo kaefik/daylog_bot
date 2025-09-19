@@ -163,5 +163,24 @@
     "yesterday_entry_created": "Kiçäge kön öçen yaña yazma buldırıldı.",
     "yesterday_entry_updated": "Kiçäge kön yazması uñışlı yañartıldı!",
     "yesterday_entry_error": "Yazma tudırğanda xata çıqtı.",
-    "yesterday_entry_update_error": "Yazmanı yañartu xatası."
+    "yesterday_entry_update_error": "Yazmanı yañartu xatası.",
+    
+    "entry_header": "📝 **{date} datasındağı yazma**",
+    "view_entry_not_found": "{date} datası öçen yazma tabılmadı.",
+    "view_entries_not_found": "Yazmalar tabılmadı.",
+    "view_entries_not_found_period": "{period} öçen yazmalar tabılmadı.",
+    "invalid_date_format": "Data formatı döres tügel. KK.AA.EEEE, KK.AA yaki KK.AA.* formatların qullanığız",
+    "view_command_help": "/view komandası köndälek yazmalarny qarau öçen qullanıla.\n\nQullanılışı:\n/view - qarau öçen çornı saylau (bügen, atna, ay)\n/view KK.AA.EEEE - bilgele ber datadağı yazmanı qarau\n/view KK.AA - ağımdağı elnıñ bilgele ber datasındağı yazmanı qarau\n/view KK.AA.* - barlıq ellarnıñ bilgele ber datasındağı yazmaların qarau",
+    "entries_for_date": "📅 **{date} datası öçen yazmalar (barlıq ellar)**\n\n",
+    "entries_for_period": "📅 **{period} öçen yazmalar**\n\n",
+    "view_select_period": "Yazmalarny qarau öçen çornı saylağız:",
+    "view_today": "Bügen",
+    "view_week": "Ağımdağı atna",
+    "view_month": "Ağımdağı ay",
+    "view_custom": "Başqa data",
+    "current_week": "ağımdağı atna",
+    "current_month": "ağımdağı ay ({month})",
+    "view_custom_help": "Üzeğez saylağan data öçen yazmalarny qarau öçen tübändäge formatlarny qullanığız:\n\n/view KK.AA.EEEE - bilgele ber datadağı yazmanı qarau\n/view KK.AA - ağımdağı elnıñ bilgele ber datasındağı yazmanı qarau\n/view KK.AA.* - barlıq ellarnıñ bilgele ber datasındağı yazmaların qarau",
+    "type_cancel_to_abort": "Yazma tudırunı beterü öçen 'otmena' dip yazığız.",
+    "creation_canceled": "👌 Yazma tudıru beterelde. Mäğlümatlar saqlanmadı."
 }

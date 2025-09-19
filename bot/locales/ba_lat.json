@@ -163,5 +163,24 @@
     "yesterday_entry_created": "Kisäge kön ösön yañı yaðma buldırıldı.",
     "yesterday_entry_updated": "Kisäge kön yaðmahı uñışlı yañartıldı!",
     "yesterday_entry_error": "Yaðma tıuðırǧanda xata sıqtı.",
-    "yesterday_entry_update_error": "Yaðmanı yañartıu xatahı."
+    "yesterday_entry_update_error": "Yaðmanı yañartıu xatahı.",
+    
+    "entry_header": "📝 **{date} datahındaǧı yaðma**",
+    "view_entry_not_found": "{date} datahı ösön yaðma tabılmanı.",
+    "view_entries_not_found": "Yaðmalar tabılmanı.",
+    "view_entries_not_found_period": "{period} ösön yaðmalar tabılmanı.",
+    "invalid_date_format": "Data formatı döröŝ tügel. KK.AA.YYYY, KK.AA yəki KK.AA.* formattatın qullanıǧıð",
+    "view_command_help": "/view komandahı köndəlek yaðmalarðı qaraw ösön qullanıla.\n\nQullanılışı:\n/view - qaraw ösön osorðo haylau (bögön, aðna, ay)\n/view KK.AA.YYYY - bildəle ber datahındaǧı yaðmanı qaraw\n/view KK.AA - aǧımdaǧı yıldıñ bildəle ber datahındaǧı yaðmanı qaraw\n/view KK.AA.* - barlıq yıldarðıñ bildəle ber datahındaǧı yaðmaların qaraw",
+    "entries_for_date": "📅 **{date} datahı ösön yaðmalar (barlıq yıldar)**\n\n",
+    "entries_for_period": "📅 **{period} ösön yaðmalar**\n\n",
+    "view_select_period": "Yaðmalarðı qaraw ösön osorðo haylaǧıð:",
+    "view_today": "Bögön",
+    "view_week": "Aǧımdaǧı aðna",
+    "view_month": "Aǧımdaǧı ay",
+    "view_custom": "Başqa data",
+    "current_week": "aǧımdaǧı aðna",
+    "current_month": "aǧımdaǧı ay ({month})",
+    "view_custom_help": "Üðegeð haylagan data ösön yaðmalarðı qaraw ösön tübəndəge formattarðı qullanıǧıð:\n\n/view KK.AA.YYYY - bildəle ber datahındaǧı yaðmanı qaraw\n/view KK.AA - aǧımdaǧı yıldıñ bildəle ber datahındaǧı yaðmanı qaraw\n/view KK.AA.* - barlıq yıldarðıñ bildəle ber datahındaǧı yaðmaların qaraw",
+    "type_cancel_to_abort": "Yaðma tıuðırıwðı bötörö ösön 'otmena' tip yaðıǧıð.",
+    "creation_canceled": "👌 Yaðma tıuðırıw bötöröldö. Məǧlüməttar haqlanmanı."
 }

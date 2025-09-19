@@ -164,5 +164,24 @@
     "yesterday_entry_created": "A new entry for yesterday has been created.",
     "yesterday_entry_updated": "Yesterday's entry has been successfully updated!",
     "yesterday_entry_error": "Error creating entry.",
-    "yesterday_entry_update_error": "Error updating entry."
+    "yesterday_entry_update_error": "Error updating entry.",
+    
+    "entry_header": "📝 **Entry from {date}**",
+    "view_entry_not_found": "No entry found for {date}.",
+    "view_entries_not_found": "No entries found.",
+    "view_entries_not_found_period": "No entries found for {period}.",
+    "invalid_date_format": "Invalid date format. Use DD.MM.YYYY, DD.MM or DD.MM.*",
+    "view_command_help": "The /view command allows you to view diary entries.\n\nUsage:\n/view - select period for viewing (today, week, month)\n/view DD.MM.YYYY - view entry for a specific date\n/view DD.MM - view entry for a specific date of the current year\n/view DD.MM.* - view entries for a specific date across all years",
+    "entries_for_date": "📅 **Entries for {date} (all years)**\n\n",
+    "entries_for_period": "📅 **Entries for {period}**\n\n",
+    "view_select_period": "Select a period to view entries:",
+    "view_today": "Today",
+    "view_week": "Current week",
+    "view_month": "Current month",
+    "view_custom": "Other date",
+    "current_week": "current week",
+    "current_month": "current month ({month})",
+    "view_custom_help": "To view entries for a custom date, use the following formats:\n\n/view DD.MM.YYYY - view entry for a specific date\n/view DD.MM - view entry for the specific date of the current year\n/view DD.MM.* - view entries for the specific date across all years",
+    "type_cancel_to_abort": "Type 'cancel' to abort creation process.",
+    "creation_canceled": "👌 Entry creation canceled. Data not saved."
 }
