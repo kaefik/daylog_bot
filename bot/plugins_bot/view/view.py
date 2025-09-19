@@ -232,8 +232,8 @@ async def display_entry(event, entry, display_date):
         location = entry.get("location") or tlgbot.i18n.t('not_specified', lang=lang) or "Не указано"
         events = entry.get("events") or tlgbot.i18n.t('not_specified', lang=lang) or "Не указано"
         
-        # Формируем сообщение
-        message = tlgbot.i18n.t('entry_header', lang=lang, date=date_formatted) or f"📝 **Запись от {date_formatted}**\n\n"
+        # Форматируем сообщение
+        message = (tlgbot.i18n.t('entry_header', lang=lang, date=date_formatted) or f"📝 **Запись от {date_formatted}**") + "\n\n"
         message += (tlgbot.i18n.t('entry_mood', lang=lang, mood=mood) or f"😊 Настроение: {mood}") + "\n"
         message += (tlgbot.i18n.t('entry_weather', lang=lang, weather=weather) or f"🌤 Погода: {weather}") + "\n"
         message += (tlgbot.i18n.t('entry_location', lang=lang, location=location) or f"📍 Местоположение: {location}") + "\n"
