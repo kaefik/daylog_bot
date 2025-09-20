@@ -10,13 +10,24 @@ import pytz
 tlgbot = globals().get('tlgbot')
 logger = globals().get('logger')
 
-# кнопки команд
-button_main_cmd = [
-    [Button.text("/today"),
-     Button.text("/yesterday")],
-    [Button.text("/view"),
-     Button.text("/export")]
-]
+def create_main_menu_buttons(lang: str):
+    """Генерирует локализованные кнопки главного меню.
+
+    Падаем обратно на команды /today etc если нет i18n.
+    """
+    if hasattr(tlgbot, 'i18n'):
+        t = tlgbot.i18n.t
+        today = t('menu_today', lang=lang)
+        yesterday = t('menu_yesterday', lang=lang)
+        view = t('menu_view', lang=lang)
+        export = t('menu_export', lang=lang)
+    else:
+        today, yesterday, view, export = "/today", "/yesterday", "/view", "/export"
+
+    return [
+        [Button.text(today), Button.text(yesterday)],
+        [Button.text(view), Button.text(export)]
+    ]
 
 # Популярные часовые пояса для России и соседних стран
 POPULAR_TIMEZONES = [
@@ -133,7 +144,7 @@ async def timezone_callback(event):
             
             # Показываем кнопки основных команд
             start_ready = tlgbot.i18n.t('start_ready', lang=lang) if hasattr(tlgbot, 'i18n') else "Теперь вы можете начать вести дневник!"
-            await event.respond(start_ready, buttons=button_main_cmd)
+            await event.respond(start_ready, buttons=create_main_menu_buttons(lang))
             return
         
         # Проверяем валидность часового пояса
@@ -148,7 +159,7 @@ async def timezone_callback(event):
         
         # Показываем кнопки основных команд
         start_ready = tlgbot.i18n.t('start_ready', lang=lang) if hasattr(tlgbot, 'i18n') else "Теперь вы можете начать вести дневник!"
-        await event.respond(start_ready, buttons=button_main_cmd)
+        await event.respond(start_ready, buttons=create_main_menu_buttons(lang))
     except Exception as e:
         logger.error(f"Ошибка обработки часового пояса: {e}")
         error_message = tlgbot.i18n.t('timezone_error', lang=lang) if hasattr(tlgbot, 'i18n') else "Ошибка при установке часового пояса."
@@ -156,4 +167,4 @@ async def timezone_callback(event):
         
         # Показываем кнопки основных команд
         start_ready = tlgbot.i18n.t('start_ready', lang=lang) if hasattr(tlgbot, 'i18n') else "Теперь вы можете начать вести дневник!"
-        await event.respond(start_ready, buttons=button_main_cmd)
+        await event.respond(start_ready, buttons=create_main_menu_buttons(lang))
