@@ -211,5 +211,7 @@
     "export_processing_today": "Подготовка экспорта за сегодня...",
     "export_processing_week": "Подготовка экспорта за текущую неделю...",
     "export_processing_month": "Подготовка экспорта за текущий месяц...",
-    "export_processing_all": "Подготовка экспорта всех записей..."
+    "export_processing_all": "Подготовка экспорта всех записей...",
+    "export_canceled": "Экспорт отменен.",
+    "export_type_cancel": "Введите 'отмена' для прерывания процесса экспорта."
 }

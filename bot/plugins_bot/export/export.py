@@ -58,6 +58,9 @@ async def show_export_options(event):
         ],
         [
             Button.inline(tlgbot.i18n.t('export_custom', lang=lang) or "Выбрать даты", data="export_period_custom")
+        ],
+        [
+            Button.inline(tlgbot.i18n.t('btn_cancel', lang=lang) or "Отмена", data="export_cancel")
         ]
     ]
     
@@ -69,6 +72,16 @@ async def process_custom_date_input(event, user_id, date_input):
     """
     user = getattr(tlgbot, 'settings', None).get_user(user_id) if getattr(tlgbot, 'settings', None) else None
     lang = getattr(user, 'lang', None) or 'ru'
+    
+    # Проверяем, не хочет ли пользователь отменить операцию
+    if date_input.lower() in ["отмена", "cancel", "отменить"]:
+        # Очищаем состояние
+        if user_id in custom_date_states:
+            del custom_date_states[user_id]
+        
+        message = tlgbot.i18n.t('export_canceled', lang=lang) or "Экспорт отменен."
+        await event.respond(message)
+        return
     
     # Пытаемся распарсить дату
     try:
@@ -91,6 +104,7 @@ async def process_custom_date_input(event, user_id, date_input):
                 }
                 
                 message = tlgbot.i18n.t('export_enter_end_date', lang=lang) or "Введите конечную дату диапазона (ДД.ММ.ГГГГ):"
+                message += "\n" + (tlgbot.i18n.t('export_type_cancel', lang=lang) or "Введите 'отмена' для прерывания процесса экспорта.")
                 await event.respond(message)
                 
             elif waiting_for == "end_date":
@@ -251,12 +265,31 @@ async def export_custom_callback(event):
     lang = getattr(user, 'lang', None) or 'ru'
     
     # Редактируем сообщение, убирая кнопки
-    await event.edit(tlgbot.i18n.t('export_enter_start_date', lang=lang) or "Введите начальную дату диапазона (ДД.ММ.ГГГГ):")
+    message = tlgbot.i18n.t('export_enter_start_date', lang=lang) or "Введите начальную дату диапазона (ДД.ММ.ГГГГ):"
+    message += "\n" + (tlgbot.i18n.t('export_type_cancel', lang=lang) or "Введите 'отмена' для прерывания процесса экспорта.")
+    await event.edit(message)
     
     # Устанавливаем состояние ожидания начальной даты
     custom_date_states[user_id] = {
         "waiting_for": "start_date"
     }
+
+# Обработчик для кнопки отмены
+@tlgbot.on(events.CallbackQuery(pattern=r'^export_cancel$'))
+async def export_cancel_callback(event):
+    """Обработчик кнопки отмены экспорта"""
+    await event.answer()
+    
+    user_id = event.sender_id
+    user = getattr(tlgbot, 'settings', None).get_user(user_id) if getattr(tlgbot, 'settings', None) else None
+    lang = getattr(user, 'lang', None) or 'ru'
+    
+    # Очищаем состояние пользователя, если оно было
+    if user_id in custom_date_states:
+        del custom_date_states[user_id]
+    
+    # Отправляем сообщение об отмене
+    await event.edit(tlgbot.i18n.t('export_canceled', lang=lang) or "Экспорт отменен.")
 
 # Обработчик текстовых сообщений для ввода дат при выборе произвольного периода
 @tlgbot.on(events.NewMessage(func=lambda e: e.text and not e.text.startswith('/')))
