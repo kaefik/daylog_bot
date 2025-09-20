@@ -3,6 +3,10 @@
 ## Журнал
 
 ### 2025-09-20
+- [docs] Добавлен design-документ меню `docs/menu_system_design.md`
+  - Зафиксированы цели: стабильность, расширяемость, производительность
+  - Описаны: MENU_CACHE, MENU_REGISTRY, COMMAND_ROUTER, inline callback подход
+  - Определена пошаговая миграция и точки инвалидации кэша
 - [feature] Добавлено переводное меню для команд в /start
   - Создана функция create_main_menu_buttons() для генерации локализованных кнопок
   - Добавлены переводы menu_today, menu_yesterday, menu_view, menu_export на все языки
