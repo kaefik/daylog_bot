@@ -1,6 +1,13 @@
 # Плагин для команды /export - экспорт записей в различные форматы
 
 from telethon import events, Button
+try:
+    from bot.menu_system import register_menu
+    register_menu({
+        'key': 'export', 'tr_key': 'menu_export', 'plugin': 'export', 'handler': 'export_command_handler', 'order': 40
+    })
+except Exception:
+    pass
 from datetime import datetime, date, timedelta
 import calendar
 import os

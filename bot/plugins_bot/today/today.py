@@ -1,6 +1,14 @@
 # Плагин для команды /today с мастером заполнения записи
 
 from datetime import date
+try:
+    from bot.menu_system import register_menu
+    # Регистрация пункта меню (если вызов повторится — будет проигнорирован)
+    register_menu({
+        'key': 'today', 'tr_key': 'menu_today', 'plugin': 'today', 'handler': 'today_handler', 'order': 10
+    })
+except Exception:
+    pass
 from telethon import events
 from bot.require_diary_user import require_diary_user
 from core.diary import DiaryManager

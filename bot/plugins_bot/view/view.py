@@ -1,6 +1,13 @@
 # Плагин для команды /view с возможностью просмотра записей по дате
 
 from datetime import datetime, date, timedelta
+try:
+    from bot.menu_system import register_menu
+    register_menu({
+        'key': 'view', 'tr_key': 'menu_view', 'plugin': 'view', 'handler': 'view_command_handler', 'order': 30
+    })
+except Exception:
+    pass
 import calendar
 import re
 from telethon import events, Button
@@ -307,8 +314,14 @@ async def view_command_handler(event):
     lang = getattr(user, 'lang', None) or 'ru'
     
     try:
-        # Получаем аргумент команды (дату)
-        command_text = event.message.text.strip()
+        # Если пришли не из текстового сообщения (например из menu:view callback через dispatch)
+        # у event может не быть .message (CallbackQuery). В этом случае просто показать меню выбора периода.
+        if not hasattr(event, 'message') or event.message is None:
+            await show_period_selection(event)
+            return
+
+        # Получаем аргумент команды (дату) из текстового сообщения
+        command_text = (event.message.text or '').strip()
         parts = command_text.split(maxsplit=1)
         
         logger.debug(f"Command /view received: {command_text}")

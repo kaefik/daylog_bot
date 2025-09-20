@@ -1,6 +1,13 @@
 # Плагин для команды /yesterday с мастером заполнения записи за предыдущий день
 
 from datetime import date, timedelta
+try:
+    from bot.menu_system import register_menu
+    register_menu({
+        'key': 'yesterday', 'tr_key': 'menu_yesterday', 'plugin': 'yesterday', 'handler': 'yesterday_handler', 'order': 20
+    })
+except Exception:
+    pass
 from telethon import events
 from bot.require_diary_user import require_diary_user
 from core.diary import DiaryManager

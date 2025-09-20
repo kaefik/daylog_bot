@@ -3,6 +3,18 @@
 ## Журнал
 
 ### 2025-09-20
+- [fix] Кнопка меню "Просмотр" падала (CallbackQuery без message)
+  - Обработан случай вызова handler без event.message (menu:view) в view_command_handler
+  - Теперь при нажатии показывается меню периода как при /view без аргументов
+- [fix] Исправлена неработоспособность inline меню (/start)
+  - Добавлен init_menu_system(tlgbot, logger) с ленивой регистрацией callback-роутера
+  - Перенос прикрепления обработчика '^menu:' из импорта в ensure_menu_router
+  - Причина: при раннем импорте tlgbot == None → AttributeError на декораторе
+- [refactor] Внедрена автогенерация главного меню через `bot/menu_system.py`
+  - Реализованы MENU_REGISTRY, MENU_CACHE, build_menu, dispatch_command
+  - Переход на inline-кнопки с callback data `menu:<key>`
+  - Регистрация пунктов меню распределена по плагинам today/yesterday/view/export
+- [cleanup] Удалён устаревший `menu_handlers.py` (логика заменена callback-роутером в menu_system)
 - [docs] Добавлен design-документ меню `docs/menu_system_design.md`
   - Зафиксированы цели: стабильность, расширяемость, производительность
   - Описаны: MENU_CACHE, MENU_REGISTRY, COMMAND_ROUTER, inline callback подход
