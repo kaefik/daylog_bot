@@ -98,6 +98,16 @@ async def start_cmd_plugin(event):
     timezone_buttons = create_timezone_buttons()
     
     await event.respond(timezone_message, buttons=timezone_buttons)
+    # Сразу показываем кнопку меню (по запросу UX) ещё до выбора часового пояса
+    if hasattr(tlgbot, 'i18n'):
+        show_btn = tlgbot.i18n.t('menu_show_button', lang=lang)
+    else:
+        show_btn = '📎 Menu'
+    try:
+        await event.respond(show_btn, buttons=[[Button.text(show_btn, resize=True, single_use=False)]])
+    except Exception as e:  # noqa: BLE001
+        if logger:
+            logger.error(f"start_cmd: early reply menu button send failed: {e}")
 
 
 # Обработчик выбора часового пояса
@@ -152,7 +162,6 @@ async def timezone_callback(event):
         logger.error(f"Ошибка обработки часового пояса: {e}")
         error_message = tlgbot.i18n.t('timezone_error', lang=lang) if hasattr(tlgbot, 'i18n') else "Ошибка при установке часового пояса."
         await event.edit(error_message)
-        
-        # Показываем кнопки основных команд
-    start_ready = tlgbot.i18n.t('start_ready', lang=lang) if hasattr(tlgbot, 'i18n') else "Теперь вы можете начать вести дневник!"
-    await send_main_menu(event, lang, start_ready)
+        # Показываем кнопки основных команд только при ошибке
+        start_ready = tlgbot.i18n.t('start_ready', lang=lang) if hasattr(tlgbot, 'i18n') else "Теперь вы можете начать вести дневник!"
+        await send_main_menu(event, lang, start_ready)
