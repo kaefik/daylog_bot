@@ -132,7 +132,8 @@ async def timezone_callback(event):
                 await event.edit(default_message)
             
             # Показываем кнопки основных команд
-            await event.respond("Теперь вы можете начать вести дневник!", buttons=button_main_cmd)
+            start_ready = tlgbot.i18n.t('start_ready', lang=lang) if hasattr(tlgbot, 'i18n') else "Теперь вы можете начать вести дневник!"
+            await event.respond(start_ready, buttons=button_main_cmd)
             return
         
         # Проверяем валидность часового пояса
@@ -146,9 +147,13 @@ async def timezone_callback(event):
         await event.edit(timezone_message)
         
         # Показываем кнопки основных команд
-        await event.respond("Теперь вы можете начать вести дневник!", buttons=button_main_cmd)
+        start_ready = tlgbot.i18n.t('start_ready', lang=lang) if hasattr(tlgbot, 'i18n') else "Теперь вы можете начать вести дневник!"
+        await event.respond(start_ready, buttons=button_main_cmd)
     except Exception as e:
         logger.error(f"Ошибка обработки часового пояса: {e}")
         error_message = tlgbot.i18n.t('timezone_error', lang=lang) if hasattr(tlgbot, 'i18n') else "Ошибка при установке часового пояса."
         await event.edit(error_message)
-        await event.respond("Можете начать вести дневник!", buttons=button_main_cmd)
+        
+        # Показываем кнопки основных команд
+        start_ready = tlgbot.i18n.t('start_ready', lang=lang) if hasattr(tlgbot, 'i18n') else "Теперь вы можете начать вести дневник!"
+        await event.respond(start_ready, buttons=button_main_cmd)

@@ -96,6 +96,7 @@
     "timezone_default": "Ғәҙәттәге сәғәт бүлкәте урнаштырылған (Europe/Moscow).",
     "timezone_unchanged": "Ағымдағы сәғәт бүлкәте үҙгәрештәрһеҙ ҡалды.",
     "cancel": "Баш тартыу",
+    "start_ready": "Хәҙер һеҙ көндәлек яҙа башлай алаһығыҙ!",
     "today_mood_prompt": "Бөгөн кәйефегеҙ нисек?",
     "today_weather_prompt": "Бөгөн һауа торошо нисек?",
     "today_location_prompt": "Һеҙ ҡайҙа урынлашҡанһығыҙ?",

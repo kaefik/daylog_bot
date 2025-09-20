@@ -95,6 +95,7 @@
     "timezone_default": "Default timezone set (Europe/Moscow).",
     "timezone_unchanged": "Current timezone remains unchanged.",
     "cancel": "Cancel",
+    "start_ready": "Now you can start keeping your diary!",
     "today_mood_prompt": "How is your mood today?",
     "today_weather_prompt": "What's the weather like today?",
     "today_location_prompt": "Where are you?",
