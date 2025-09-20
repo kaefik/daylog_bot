@@ -26,6 +26,7 @@ class MenuEntry:
     plugin: str
     handler: str
     order: int = 100
+    enabled: bool = True
 
 
 MENU_REGISTRY: List[MenuEntry] = []
@@ -67,6 +68,8 @@ def build_menu(lang: str) -> List[List[Button]]:
     rows: List[List[Button]] = []
     current: List[Button] = []
     for entry in sorted(MENU_REGISTRY, key=lambda e: e.order):
+        if not getattr(entry, 'enabled', True):
+            continue
         label = t(entry.tr_key, lang=lang) or entry.tr_key
         current.append(Button.inline(label, data=f"menu:{entry.key}"))
         if len(current) == 2:
@@ -138,6 +141,24 @@ def init_menu_system(tlg, log=None):
         logger = log
     ensure_menu_router()
     return tlgbot
+
+
+def disable_menu(key: str):
+    for e in MENU_REGISTRY:
+        if e.key == key:
+            e.enabled = False
+    MENU_CACHE.clear()
+    if logger:
+        logger.debug(f"menu_system: disabled {key}")
+
+
+def enable_menu(key: str):
+    for e in MENU_REGISTRY:
+        if e.key == key:
+            e.enabled = True
+    MENU_CACHE.clear()
+    if logger:
+        logger.debug(f"menu_system: enabled {key}")
 
 
 def bootstrap_default_entries():

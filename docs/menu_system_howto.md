@@ -116,3 +116,40 @@ A: Второй silently игнорируется — смотри логи.
 
 ---
 Коротко: добавляешь register_menu + handler + перевод — готово.
+
+## 14. Тестирование меню
+Минимальные сценарии (можно оформить pytest):
+```python
+from bot.menu_system import MENU_REGISTRY, register_menu, build_menu, invalidate_menu
+
+def test_register_unique():
+    invalidate_menu()
+    before = len(MENU_REGISTRY)
+    register_menu({'key':'_t1','tr_key':'menu_today','plugin':'today','handler':'today_handler','order':999})
+    assert len(MENU_REGISTRY) == before + 1
+
+def test_duplicate_ignored():
+    before = len(MENU_REGISTRY)
+    register_menu({'key':'_t1','tr_key':'menu_today','plugin':'today','handler':'today_handler','order':999})
+    assert len(MENU_REGISTRY) == before  # не увеличилось
+```
+Проверка кнопок: `buttons = build_menu('ru')` → assert структура (список списков), наличие callback data `menu:`.
+
+## 15. Динамическая видимость *(если внедрён флаг enabled)*
+- Расширяем `MenuEntry` полем `enabled: bool = True`.
+- В `build_menu` игнорируем записи где `enabled is False`.
+- Добавляем функции:
+```python
+def disable_menu(key: str):
+    for e in MENU_REGISTRY:
+        if e.key == key:
+            e.enabled = False
+    MENU_CACHE.clear()
+
+def enable_menu(key: str):
+    for e in MENU_REGISTRY:
+        if e.key == key:
+            e.enabled = True
+    MENU_CACHE.clear()
+```
+Использование: временно скрыть экспорт → `disable_menu('export')`.
