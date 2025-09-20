@@ -98,6 +98,13 @@
     "db_manager_import_error": "Ошибка импорта DatabaseManager.",
     "db_path_import_error": "Ошибка импорта DAYLOG_DB_PATH из config_tlg.",
     "diary_user_already_exists": "Вы уже зарегистрированы в дневнике!",
+    "timezone_select": "Выберите ваш часовой пояс:",
+    "timezone_selected": "Часовой пояс установлен: {timezone}",
+    "timezone_error": "Ошибка при установке часового пояса. Используется значение по умолчанию (Europe/Moscow).",
+    "timezone_cancel": "Выбор часового пояса отменен.",
+    "timezone_default": "Установлен часовой пояс по умолчанию (Europe/Moscow).",
+    "timezone_unchanged": "Текущий часовой пояс оставлен без изменений.",
+    "cancel": "Отмена",
 
     "today_mood_prompt": "Какое у вас сегодня настроение?",
     "today_weather_prompt": "Какая сегодня погода?",

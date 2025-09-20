@@ -369,10 +369,64 @@ class DatabaseManager:
     
     # Методы для работы с настройками
     def get_user_settings(self, user_id: int) -> Dict:
-        pass
+        """Получение настроек пользователя"""
+        try:
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+                
+                # Получаем настройки из двух таблиц
+                cursor.execute('''
+                    SELECT s.*, u.language_code, u.timezone
+                    FROM user_settings s
+                    JOIN users u ON s.user_id = u.user_id
+                    WHERE s.user_id = ?
+                ''', (user_id,))
+                
+                row = cursor.fetchone()
+                return dict(row) if row else {}
+                
+        except sqlite3.Error as e:
+            logger.error(f"Ошибка получения настроек пользователя {user_id}: {e}")
+            return {}
     
     def update_user_settings(self, user_id: int, **kwargs) -> bool:
-        pass
+        """Обновление настроек пользователя"""
+        try:
+            # Разделяем настройки на две группы: user и settings
+            user_fields = {"language_code", "timezone"}
+            user_updates = {k: v for k, v in kwargs.items() if k in user_fields}
+            settings_updates = {k: v for k, v in kwargs.items() if k not in user_fields}
+            
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+                
+                # Обновляем основные данные пользователя
+                if user_updates:
+                    fields = ", ".join([f"{k} = ?" for k in user_updates.keys()])
+                    values = list(user_updates.values())
+                    
+                    cursor.execute(f'''
+                        UPDATE users SET {fields}
+                        WHERE user_id = ?
+                    ''', values + [user_id])
+                
+                # Обновляем настройки пользователя
+                if settings_updates:
+                    fields = ", ".join([f"{k} = ?" for k in settings_updates.keys()])
+                    values = list(settings_updates.values())
+                    
+                    cursor.execute(f'''
+                        UPDATE user_settings SET {fields}
+                        WHERE user_id = ?
+                    ''', values + [user_id])
+                
+                conn.commit()
+                logger.info(f"Настройки пользователя {user_id} обновлены")
+                return True
+                
+        except sqlite3.Error as e:
+            logger.error(f"Ошибка обновления настроек пользователя {user_id}: {e}")
+            return False
 
     def get_user_statistics(self, user_id: int) -> Dict:
         """Получение статистики пользователя"""
