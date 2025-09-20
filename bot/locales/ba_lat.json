@@ -54,7 +54,7 @@
     "unload_unhandled_exception": "{name} yöktän alğanda eşkärtelmägän iskäreme",
     "removed_plugin": "{name} plagin bötöröldö",
     "inline_choose": "Ğämäldı hayla:",
-    "start_welcome": "Sälam! Mäğlümat alıu ösön komandalarğa bas!",
+    "start_welcome": "👋 DayLog Bot-qa räxim itegez!\n\nBıl bot hezgä Telegram-da şäxsi köndälek alıp barırğa yarźam itä.\n\n📝 Töp funktsiyalar:\n• /today - Bögöngö yazma\n• /yesterday - Kisäge yazma\n• /view - Yazmalarzı qaraw\n• /export - Köndälekte eksportlaw\n\n/today knopkahına basıp, yazma yaza başlağız.",
     "runner_finished": "Äñgämä tamamlandı.",
     "inline_button_today": "bögön",
     "inline_button_tomorrow": "irtägä",

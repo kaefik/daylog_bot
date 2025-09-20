@@ -53,7 +53,7 @@
     "unload_unhandled_exception": "Unhandled exception unloading {name}",
     "removed_plugin": "Removed plugin {name}",
     "inline_choose": "Choose an action:",
-    "start_welcome": "Hi! Press commands to get information!",
+    "start_welcome": "👋 Welcome to DayLog Bot!\n\nThis bot will help you keep a personal diary right in Telegram.\n\n📝 Main features:\n• /today - Create today's entry\n• /yesterday - Create yesterday's entry\n• /view - Browse your diary entries\n• /export - Export your diary\n\nStart by creating an entry using the /today button.",
     "runner_finished": "Conversation finished.",
     "inline_button_today": "today",
     "inline_button_tomorrow": "tomorrow",
