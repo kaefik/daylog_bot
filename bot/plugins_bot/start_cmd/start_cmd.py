@@ -13,7 +13,7 @@ button_main_cmd = [
     [Button.text("/today"),
      Button.text("/yesterday")],
     [Button.text("/view"),
-     Button.text(tlgbot.i18n.t('start_cmd_4', lang=tlgbot.i18n.default_lang) if hasattr(tlgbot, 'i18n') else "команда4")]
+     Button.text("/export")]
 ]
 
 
