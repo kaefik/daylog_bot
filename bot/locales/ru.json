@@ -230,4 +230,15 @@
     "export_processing_all": "Подготовка экспорта всех записей...",
     "export_canceled": "Экспорт отменен.",
     "export_type_cancel": "Введите 'отмена' для прерывания процесса экспорта."
+    ,
+    "settings_reminder_title": "Настройки напоминаний",
+    "settings_reminder_set_time": "⏰ Время напоминания",
+    "settings_reminder_choose": "Выберите время напоминания:",
+    "settings_reminder_custom": "Другое",
+    "settings_reminder_disable": "Отключить",
+    "settings_reminder_enter_time": "Введите время в формате HH:MM (24ч):",
+    "settings_reminder_invalid_format": "Неверный формат. Нужно HH:MM",
+    "settings_reminder_saved": "Напоминание установлено на {time}.",
+    "settings_reminder_disabled": "Напоминания отключены.",
+    "reminder_no_entry": "Не забудь записать, как прошёл день! /today"
 }

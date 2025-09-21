@@ -19,6 +19,16 @@
   - Добавлены shim-модули + `sitecustomize.py` и `conftest.py` для корректного `sys.path`
   - Все тесты проходят: 49 passed
 - [docs] Обновлён `docs/menu_system_howto.md` разделами про `admin_only`, кэш по роли, тестирование и FAQ по админским кнопкам
+ - [feat] Система настраиваемых напоминаний о записи дня
+   - Добавлен планировщик `APScheduler` (AsyncIOScheduler) и инициализация при старте
+   - Таблица `user_settings`: миграция добавляет колонку `last_reminder_date`
+   - Функции: `schedule_user_reminder`, `disable_user_reminder`, автозагрузка `load_reminder_jobs`
+   - Плагин `/settings` с выбором времени (пресеты + произвольный ввод)
+   - Локализации: ключи `settings_reminder_*`, `reminder_no_entry` (ru/en)
+   - Логирование с префиксом `[reminder]` (sent / skip / disabled / rescheduled / errors)
+   - Защита от повторной отправки в один день через `last_reminder_date`
+  - Добавлена поддержка таймзон на уровне пользователя (используется поле `timezone` + `zoneinfo`)
+  - Cron задачи ставятся с индивидуальной таймзоной, дата проверки и `last_reminder_date` — локальная
 
 ### 2025-09-20
 - [improve] Инвалидация кэша главного меню при смене языка (/setlang)

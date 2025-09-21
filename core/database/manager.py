@@ -464,3 +464,53 @@ class DatabaseManager:
         except sqlite3.Error as e:
             logger.error(f"Ошибка получения статистики: {e}")
             return {}
+
+    # ---------------- Напоминания -----------------
+    def ensure_reminder_columns(self):
+        """Гарантировать наличие колонок для напоминаний.
+
+        Добавляет last_reminder_date если её нет (формат YYYY-MM-DD),
+        остальное уже есть в user_settings.
+        """
+        try:
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("PRAGMA table_info(user_settings)")
+                cols = {row[1] for row in cursor.fetchall()}
+                if "last_reminder_date" not in cols:
+                    cursor.execute("ALTER TABLE user_settings ADD COLUMN last_reminder_date TEXT")
+                    conn.commit()
+                    logger.info("[reminder] добавлена колонка last_reminder_date")
+        except sqlite3.Error as e:
+            logger.error(f"[reminder] ошибка ensure_reminder_columns: {e}")
+
+    def get_users_with_reminders(self) -> List[Dict]:
+        """Получить пользователей у которых включены напоминания."""
+        try:
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    """
+                    SELECT u.user_id, u.language_code, u.timezone, s.reminder_time, s.last_reminder_date
+                    FROM users u
+                    JOIN user_settings s ON u.user_id = s.user_id
+                    WHERE s.reminder_enabled = 1 AND s.reminder_time IS NOT NULL
+                    """
+                )
+                return [dict(r) for r in cursor.fetchall()]
+        except sqlite3.Error as e:
+            logger.error(f"[reminder] ошибка get_users_with_reminders: {e}")
+            return []
+
+    def update_last_reminder_date(self, user_id: int, date_str: str):
+        """Сохраняет дату последней отправки напоминания."""
+        try:
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "UPDATE user_settings SET last_reminder_date = ? WHERE user_id = ?",
+                    (date_str, user_id),
+                )
+                conn.commit()
+        except sqlite3.Error as e:
+            logger.error(f"[reminder] ошибка update_last_reminder_date: {e}")

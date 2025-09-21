@@ -207,4 +207,15 @@
     "export_canceled": "Export canceled.",
     "export_type_cancel": "Type 'cancel' to abort export.",
     "choose_lang": "Choose a language. Available languages:"
+    ,
+    "settings_reminder_title": "Reminder settings",
+    "settings_reminder_set_time": "⏰ Reminder time",
+    "settings_reminder_choose": "Choose reminder time:",
+    "settings_reminder_custom": "Custom",
+    "settings_reminder_disable": "Disable",
+    "settings_reminder_enter_time": "Enter time in HH:MM (24h):",
+    "settings_reminder_invalid_format": "Invalid format. Use HH:MM",
+    "settings_reminder_saved": "Reminder set to {time}.",
+    "settings_reminder_disabled": "Reminders disabled.",
+    "reminder_no_entry": "Don't forget to write about your day! /today"
 }

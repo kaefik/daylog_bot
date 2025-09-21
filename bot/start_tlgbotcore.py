@@ -5,6 +5,25 @@ from bot.tlgbotcore.logging_config import setup_logging
 from bot.tlgbotcore.i18n import I18n
 import asyncio
 import logging
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from core.database.manager import DatabaseManager
+from cfg.config_tlg import DAYLOG_DB_PATH
+from bot.reminders.manager import schedule_user_reminder
+
+
+async def load_reminder_jobs(tlg):
+    """Загрузка задач напоминаний из БД."""
+    db = DatabaseManager(db_path=DAYLOG_DB_PATH)
+    db.ensure_reminder_columns()
+    users = db.get_users_with_reminders()
+    count = 0
+    for u in users:
+        reminder_time = u.get("reminder_time")
+        if not reminder_time:
+            continue
+        schedule_user_reminder(tlg, db, u["user_id"], reminder_time)
+        count += 1
+    logging.getLogger(__name__).info(f"[reminder] loaded jobs count={count}")
 
 
 class ConfigAdapter:
@@ -49,7 +68,14 @@ async def _main_async():
     # Делаем i18n глобально доступным для плагинов (например, через атрибут бота)
     tlg.i18n = i18n
 
+    # Инициализация планировщика
+    scheduler = AsyncIOScheduler(timezone="UTC")
+    scheduler.start()
+    tlg.scheduler = scheduler  # делаем доступным плагинам
+
     await tlg.start_core(bot_token=config.I_BOT_TOKEN)
+    # После загрузки плагинов и старта — загрузим задачи
+    await load_reminder_jobs(tlg)
     await tlg.disconnected
 
 
