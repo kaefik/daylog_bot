@@ -233,6 +233,7 @@
     ,
     "settings_reminder_title": "Настройки напоминаний",
     "settings_reminder_set_time": "⏰ Время напоминания",
+    "settings_change_language": "🌐 Язык",
     "settings_reminder_choose": "Выберите время напоминания:",
     "settings_reminder_custom": "Другое",
     "settings_reminder_disable": "Отключить",

@@ -29,7 +29,10 @@ async def settings_root(event):
     await event.respond(
         tlgbot.i18n.t('settings_reminder_title', lang=lang),
         buttons=[
-            [Button.inline(tlgbot.i18n.t('settings_reminder_set_time', lang=lang), data=b'rem:set')],
+            [
+                Button.inline(tlgbot.i18n.t('settings_reminder_set_time', lang=lang), data=b'rem:set'),
+                Button.inline(tlgbot.i18n.t('settings_change_language', lang=lang), data=b'setlang:open'),
+            ],
         ]
     )
 
@@ -75,6 +78,20 @@ async def disable_time(event):
     db.update_user_settings(user_id, reminder_enabled=0)
     disable_user_reminder(tlgbot, user_id)
     await event.edit(tlgbot.i18n.t('settings_reminder_disabled', lang='ru'))
+
+@tlgbot.on(events.CallbackQuery(pattern=b'setlang:open'))
+async def settings_open_setlang(event):
+    """Показать выбор языка прямо из меню настроек."""
+    user = tlgbot.settings.get_user(event.sender_id)
+    from cfg import config_tlg as _cfg  # локальный импорт
+    buttons = [
+        [Button.inline(name, data=f"setlang_{code}".encode())]
+        for code, name in _cfg.AVAILABLE_LANGS.items()
+    ]
+    await event.edit(
+        tlgbot.i18n.t('choose_lang', lang=getattr(user, 'lang', 'ru')),
+        buttons=buttons
+    )
 
 @tlgbot.on(events.NewMessage())
 async def catch_custom_time(event):

@@ -2,6 +2,7 @@
     "greeting": "Sälam!!",
     "no_access": "Hiñä botqa ineü röxsät itelmägän. Hiñeñ id: {user_id}. Administrator menän bäyläneşkä sıq.",
     "choose_lang": "Tel hayla. Bar bulğan tel där:",
+    "settings_change_language": "🌐 Tel",
     "lang_not_supported": "{code} kody menän tel xuplanmay.",
     "lang_changed": "Tel uñışlı räweştä {lang_name} itep üzgärtelde.",
     "reload_core_forbidden": "_core plagindı yañınan yökläü röxsät itelmäy.",

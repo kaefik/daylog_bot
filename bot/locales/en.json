@@ -210,6 +210,7 @@
     ,
     "settings_reminder_title": "Reminder settings",
     "settings_reminder_set_time": "⏰ Reminder time",
+    "settings_change_language": "🌐 Language",
     "settings_reminder_choose": "Choose reminder time:",
     "settings_reminder_custom": "Custom",
     "settings_reminder_disable": "Disable",
