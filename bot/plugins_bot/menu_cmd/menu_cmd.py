@@ -16,15 +16,44 @@ logger = globals().get('logger')
 
 
 def _get_lang(event):
+    user_id = event.sender_id
+    
+    # 1. Проверяем настройки бота
     if hasattr(tlgbot, 'settings'):
-        user = tlgbot.settings.get_user(event.sender_id)
+        user = tlgbot.settings.get_user(user_id)
         if user and getattr(user, 'lang', None):
             return user.lang
+    
+    # 2. Проверяем язык в event (мог быть добавлен require_diary_user)
+    if hasattr(event, 'lang') and event.lang:
+        return event.lang
+        
+    # 3. Проверяем в базе данных
+    try:
+        from core.database.manager import DatabaseManager
+        from cfg.config_tlg import DAYLOG_DB_PATH
+        
+        db = DatabaseManager(db_path=DAYLOG_DB_PATH)
+        db_user = db.get_user(user_id)
+        if db_user and db_user.get('language_code'):
+            return db_user['language_code']
+    except Exception as e:
+        if logger:
+            logger.error(f"menu_cmd: Error getting language from DB: {e}")
+    
+    # 4. Возвращаем дефолт
     return getattr(getattr(tlgbot, 'i18n', None), 'default_lang', 'ru')
 
 
 async def _show_menu(event):
     lang = _get_lang(event)
+    if logger:
+        logger.debug(f"menu_cmd: _show_menu with lang={lang}")
+    
+    # Убедимся, что меню будет корректно построено с i18n
+    from bot.menu_system import init_menu_system
+    init_menu_system(tlgbot, logger)
+    
     if hasattr(tlgbot, 'i18n'):
         t = tlgbot.i18n.t
         ready_text = t('start_ready', lang=lang)

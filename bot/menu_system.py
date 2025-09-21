@@ -90,9 +90,26 @@ def build_menu(lang: str, is_admin: bool = False) -> List[List[Button]]:
         if logger:
             logger.debug(f"menu_system: cache hit key={cache_key}")
         return MENU_CACHE[cache_key]
-    if hasattr(tlgbot, 'i18n'):
+    
+    # Убедимся, что tlgbot и i18n существуют и правильно инициализированы
+    global tlgbot
+    tlgbot = globals().get('tlgbot') or tlgbot
+    
+    if hasattr(tlgbot, 'i18n') and tlgbot.i18n:
+        # Проверим, загружены ли локали правильно
+        if not hasattr(tlgbot.i18n, 'locales') or not tlgbot.i18n.locales:
+            if logger:
+                logger.warning(f"menu_system: i18n locales not loaded, reloading for lang={lang}")
+            # Перезагрузим локали
+            tlgbot.i18n.load_locales("bot/locales")
+            
         t = tlgbot.i18n.t  # type: ignore[attr-defined]
+        if logger:
+            logger.debug(f"menu_system: using i18n from tlgbot for {lang}")
     else:
+        # Фолбэк - просто возвращаем ключ (но логгируем ошибку)
+        if logger:
+            logger.error(f"menu_system: i18n not available for lang={lang}")
         t = lambda key, lang=None, **kw: key  # noqa: E731
 
     rows: List[List[Button]] = []
@@ -117,6 +134,25 @@ def build_menu(lang: str, is_admin: bool = False) -> List[List[Button]]:
 
 async def dispatch_command(key: str, event) -> None:
     """Находит MenuEntry и вызывает связанный handler."""
+    # Убедимся что i18n доступен перед вызовом handler
+    global tlgbot
+    tlgbot = globals().get('tlgbot') or tlgbot
+    
+    # Если у event нет атрибута lang, добавим его
+    if not hasattr(event, 'lang') and hasattr(event, 'sender_id'):
+        try:
+            from cfg.config_tlg import DAYLOG_DB_PATH
+            from core.database.manager import DatabaseManager
+            db = DatabaseManager(db_path=DAYLOG_DB_PATH)
+            user_row = db.get_user(event.sender_id)
+            if user_row and 'language_code' in user_row:
+                event.lang = user_row['language_code']
+                if logger:
+                    logger.debug(f"menu_system: dispatch_command set event.lang={event.lang}")
+        except Exception as e:
+            if logger:
+                logger.error(f"menu_system: dispatch_command error getting language: {e}")
+    
     entry = next((e for e in MENU_REGISTRY if e.key == key), None)
     if not entry:
         if logger:
@@ -145,6 +181,8 @@ def ensure_menu_router():
         return
     tlg = globals().get('tlgbot') or tlgbot
     if tlg is None:
+        if logger:
+            logger.error("menu_system: ensure_menu_router failed - tlgbot is None")
         return  # повторим позже
 
     @tlg.on(events.CallbackQuery(pattern=r'^menu:'))  # type: ignore[misc]
@@ -157,6 +195,7 @@ def ensure_menu_router():
         await event.answer()
         await dispatch_command(key, event)
 
+    # Обновляем глобальные ссылки
     tlgbot = tlg
     _MENU_ROUTER_ATTACHED = True
     if logger:
@@ -173,7 +212,25 @@ def init_menu_system(tlg, log=None):
         tlgbot = tlg
     if log is not None:
         logger = log
+
+    # Удостоверимся, что у tlgbot есть i18n
+    if tlgbot and not hasattr(tlgbot, 'i18n'):
+        if logger:
+            logger.debug("menu_system: tlgbot.i18n not initialized, trying to find from globals")
+        # Попробуем найти i18n в глобальных переменных
+        i18n = globals().get('i18n')
+        if i18n:
+            tlgbot.i18n = i18n
+            if logger:
+                logger.debug("menu_system: attached i18n from globals")
+
     ensure_menu_router()
+    
+    # Очищаем кэш при инициализации чтобы избежать проблем с локализацией
+    MENU_CACHE.clear()
+    if logger:
+        logger.debug("menu_system: initialized and cache cleared")
+    
     return tlgbot
 
 
