@@ -22,10 +22,20 @@ TIME_REGEX = re.compile(r'^(?:[01]\d|2[0-3]):[0-5]\d$')
 
 PRESET_TIMES = ["18:00", "19:00", "20:00", "21:00", "22:00"]
 
+def _resolve_lang(user_id: int) -> str:
+    """Определение языка пользователя из settings-хранилища с fallback на ru."""
+    try:
+        user = tlgbot.settings.get_user(user_id)
+        if user and getattr(user, 'lang', None):
+            return user.lang
+    except Exception:  # noqa: BLE001
+        pass
+    return 'ru'
+
 @tlgbot.on(events.NewMessage(pattern=r'/settings'))
 async def settings_root(event):
     user_id = event.sender_id
-    lang = 'ru'
+    lang = _resolve_lang(user_id)
     await event.respond(
         tlgbot.i18n.t('settings_reminder_title', lang=lang),
         buttons=[
@@ -38,7 +48,7 @@ async def settings_root(event):
 
 @tlgbot.on(events.CallbackQuery(pattern=b'rem:set'))
 async def show_time_menu(event):
-    lang = 'ru'
+    lang = _resolve_lang(event.sender_id)
     rows = []
     row = []
     for t in PRESET_TIMES:
@@ -64,20 +74,23 @@ async def set_preset_time(event):
         return
     db.update_user_settings(user_id, reminder_time=time_value, reminder_enabled=1)
     schedule_user_reminder(tlgbot, db, user_id, time_value)
-    await event.edit(tlgbot.i18n.t('settings_reminder_saved', lang='ru', time=time_value))
+    lang = _resolve_lang(user_id)
+    await event.edit(tlgbot.i18n.t('settings_reminder_saved', lang=lang, time=time_value))
 
 @tlgbot.on(events.CallbackQuery(pattern=b'rem:custom'))
 async def ask_custom_time(event):
     user_id = event.sender_id
     WAIT_CUSTOM_TIME[user_id] = True
-    await event.edit(tlgbot.i18n.t('settings_reminder_enter_time', lang='ru'))
+    lang = _resolve_lang(user_id)
+    await event.edit(tlgbot.i18n.t('settings_reminder_enter_time', lang=lang))
 
 @tlgbot.on(events.CallbackQuery(pattern=b'rem:disable'))
 async def disable_time(event):
     user_id = event.sender_id
     db.update_user_settings(user_id, reminder_enabled=0)
     disable_user_reminder(tlgbot, user_id)
-    await event.edit(tlgbot.i18n.t('settings_reminder_disabled', lang='ru'))
+    lang = _resolve_lang(user_id)
+    await event.edit(tlgbot.i18n.t('settings_reminder_disabled', lang=lang))
 
 @tlgbot.on(events.CallbackQuery(pattern=b'setlang:open'))
 async def settings_open_setlang(event):
@@ -99,10 +112,11 @@ async def catch_custom_time(event):
     if not WAIT_CUSTOM_TIME.get(user_id):
         return
     text = event.raw_text.strip()
+    lang = _resolve_lang(user_id)
     if not TIME_REGEX.match(text):
-        await event.respond(tlgbot.i18n.t('settings_reminder_invalid_format', lang='ru'))
+        await event.respond(tlgbot.i18n.t('settings_reminder_invalid_format', lang=lang))
         return
     WAIT_CUSTOM_TIME.pop(user_id, None)
     db.update_user_settings(user_id, reminder_time=text, reminder_enabled=1)
     schedule_user_reminder(tlgbot, db, user_id, text)
-    await event.respond(tlgbot.i18n.t('settings_reminder_saved', lang='ru', time=text))
+    await event.respond(tlgbot.i18n.t('settings_reminder_saved', lang=lang, time=text))

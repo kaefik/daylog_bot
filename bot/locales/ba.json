@@ -207,5 +207,15 @@
     "export_processing_month": "Ай өсөн экспорт әҙерләнә...",
     "export_processing_all": "Бөтөн яҙмалар өсөн экспорт әҙерләнә...",
     "export_canceled": "Экспорт тоткарланды.",
-    "export_type_cancel": "Экспортты туҡтатыу өсөн 'отмена' тип яҙғыҙ."
+    "export_type_cancel": "Экспортты туҡтатыу өсөн 'отмена' тип яҙғыҙ.",
+    "settings_reminder_title": "Иҫкәртеү",
+    "settings_reminder_set_time": "⏰ Иҫкәртеү ваҡыты",
+    "settings_reminder_choose": "Иҫкәртеү ваҡытын һайлағыҙ:",
+    "settings_reminder_custom": "Башҡа",
+    "settings_reminder_disable": "Һүндереү",
+    "settings_reminder_enter_time": "Вақты HH:MM форматында индерегеҙ (24с):",
+    "settings_reminder_invalid_format": "Формат дөрөҫ түгел. HH:MM кәрәк",
+    "settings_reminder_saved": "Иҫкәртеү {time} ваҡытында ҡуйылды.",
+    "settings_reminder_disabled": "Иҫкәртеүҙәр һүндерелде.",
+    "reminder_no_entry": "Бөгөнгө көн тураһында яҙырға онотма! /today"
 }

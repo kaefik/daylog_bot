@@ -208,7 +208,7 @@
     "export_type_cancel": "Type 'cancel' to abort export.",
     "choose_lang": "Choose a language. Available languages:"
     ,
-    "settings_reminder_title": "Reminder settings",
+    "settings_reminder_title": "Reminder",
     "settings_reminder_set_time": "⏰ Reminder time",
     "settings_change_language": "🌐 Language",
     "settings_reminder_choose": "Choose reminder time:",

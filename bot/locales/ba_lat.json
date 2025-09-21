@@ -207,5 +207,15 @@
     "export_processing_month": "Ай өсөн экспорт әҙерләнә...",
     "export_processing_all": "Бөтөн яҙмалар өсөн экспорт әҙерләнә...",
     "export_canceled": "Экспорт тоткарланды.",
-    "export_type_cancel": "Экспортты туҡтатыу өсөн 'отмена' тип яҙғыҙ."
+    "export_type_cancel": "Экспортtı tuqtatıw öçön 'otmena' tip yaðığıð.",
+    "settings_reminder_title": "İskärtöw",
+    "settings_reminder_set_time": "⏰ İskärtöw waqıtı",
+    "settings_reminder_choose": "İskärtöw waqıtın haylağıð:",
+    "settings_reminder_custom": "Başqa",
+    "settings_reminder_disable": "Hündərəü",
+    "settings_reminder_enter_time": "Waqıttı HH:MM formatında indereğeð (24s):",
+    "settings_reminder_invalid_format": "Format düres tügel. HH:MM käräk",
+    "settings_reminder_saved": "İskärtöw {time} waqıtına quyıldı.",
+    "settings_reminder_disabled": "İskärtöwźär hünderelde.",
+    "reminder_no_entry": "Bögöngö kön turahında yazarğa onıtma! /today"
 }

@@ -6,6 +6,11 @@
 from telethon import events, Button
 from bot.menu_system import invalidate_menu, build_menu
 from cfg import config_tlg
+from core.database.manager import DatabaseManager
+from cfg.config_tlg import DAYLOG_DB_PATH
+
+# локальный экземпляр менеджера дневника для обновления language_code
+_diary_db = DatabaseManager(db_path=DAYLOG_DB_PATH)
 
 # tlgbot глобально доступен в плагинах через динамическую загрузку
 tlgbot = globals().get('tlgbot')
@@ -38,6 +43,15 @@ async def setlang_callback_handler(event):
     # Если по какой-то причине lang_code не задан, используем язык по умолчанию из конфига
     user.lang = lang_code or getattr(config_tlg, "DEFAULT_LANG", "ru")
     tlgbot.settings.update_user(user)  # используйте update_user для обновления существующего пользователя
+    # Синхронизируем язык в основной БД дневника (таблица users.language_code)
+    try:
+        _diary_db.update_user_settings(user.id, language_code=user.lang)
+    except Exception as _e:  # noqa: BLE001
+        # Логируем, но не прерываем смену языка
+        try:
+            tlgbot._logger.warning(f"Не удалось обновить language_code в дневниковой БД: {_e}")
+        except Exception:
+            pass
     # Инвалидация кэша меню для нового языка
     try:
         invalidate_menu(user.lang)

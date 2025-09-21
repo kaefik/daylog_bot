@@ -208,4 +208,15 @@
     "export_processing_all": "Бөтен язмалар өчен экспорт әзерләнә...",
     "export_canceled": "Экспорт туктатылды.",
     "export_type_cancel": "Экспортны туктату өчен 'отмена' языгыз."
+    ,
+    "settings_reminder_title": "Искәрмәләр",
+    "settings_reminder_set_time": "⏰ Искәрмә вакыты",
+    "settings_reminder_choose": "Искәрмә вакытын сайлагыз:",
+    "settings_reminder_custom": "Башка",
+    "settings_reminder_disable": "Сүндерү",
+    "settings_reminder_enter_time": "Вакытны HH:MM форматында кертегез (24с):",
+    "settings_reminder_invalid_format": "Формат дөрес түгел. HH:MM кирәк",
+    "settings_reminder_saved": "Искәрмә {time} вакытында куелды.",
+    "settings_reminder_disabled": "Искәрмәләр сүндерелде.",
+    "reminder_no_entry": "Бүгенге көн турында язырга онытма! /today"
 }

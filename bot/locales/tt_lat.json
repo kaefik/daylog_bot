@@ -208,4 +208,15 @@
     "export_processing_all": "Бөтен язмалар өчен экспорт әзерләнә...",
     "export_canceled": "Экспорт туктатылды.",
     "export_type_cancel": "Экспортны туктату өчен 'отмена' языгыз."
+    ,
+    "settings_reminder_title": "İskärmälär",
+    "settings_reminder_set_time": "⏰ İskärmä waqıtı",
+    "settings_reminder_choose": "İskärmä waqıtın saylağız:",
+    "settings_reminder_custom": "Başqa",
+    "settings_reminder_disable": "Sünderü",
+    "settings_reminder_enter_time": "Waqıtnı HH:MM formatında kertägez (24s):",
+    "settings_reminder_invalid_format": "Format döres tügel. HH:MM kiräk",
+    "settings_reminder_saved": "İskärmä {time} waqıtına quyıldı.",
+    "settings_reminder_disabled": "İskärmälär sünderelde.",
+    "reminder_no_entry": "Bügenge kön turında yazarğa onıtma! /today"
 }

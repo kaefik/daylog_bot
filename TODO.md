@@ -36,6 +36,17 @@
    - Callback `setlang:open` открывает тот же выбор языков, что и команда `/setlang`
      - Добавлен ключ локализации `settings_change_language` (ru/en)
      - Добавлены переводы `settings_change_language` для tt, tt_lat, ba, ba_lat
+   - [fix] Синхронизация языка в дневниковой БД при смене через /setlang
+     - В обработчике setlang_callback_handler добавлено обновление `users.language_code` через `DatabaseManager.update_user_settings`
+     - Предотвращает рассинхрон между settings-хранилищем и таблицей `users`
+     - Добавлен тест `test_setlang_language_persist.py`
+ - [fix] Динамическая локализация /settings
+   - Убраны жёсткие 'ru' в плагине settings
+   - Добавлен helper `_resolve_lang` извлекающий user.lang из settings-хранилища
+   - Все ответы (/settings, выбор времени, сохранение, ошибки формата, отключение) теперь на выбранном языке
+ - [i18n] Актуализированы переводы напоминаний для дополнительных языков
+   - Добавлены ключи `settings_reminder_*`, `reminder_no_entry` в tt, tt_lat, ba, ba_lat
+   - Устранены дубли ключей `settings_change_language`
 
 ### 2025-09-20
 - [improve] Инвалидация кэша главного меню при смене языка (/setlang)
