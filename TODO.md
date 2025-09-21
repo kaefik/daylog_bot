@@ -30,6 +30,7 @@
   - Добавлена поддержка таймзон на уровне пользователя (используется поле `timezone` + `zoneinfo`)
   - Cron задачи ставятся с индивидуальной таймзоной, дата проверки и `last_reminder_date` — локальная
   - [test] Добавлен `tests/test_reminders.py` (сценарии: запись существует, уже отправлено, успешная отправка)
+  - [test] Добавлен `tests/test_reminders_schedule.py` (initial, reschedule, invalid time)
 
 ### 2025-09-20
 - [improve] Инвалидация кэша главного меню при смене языка (/setlang)
