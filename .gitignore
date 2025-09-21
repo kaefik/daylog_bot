@@ -7,6 +7,7 @@ mp3/
 *.db
 *.session-journal
 data/exports/
+*.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
