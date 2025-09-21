@@ -7,7 +7,7 @@
 Примечание: reply-кнопка создаётся в /start (start_cmd) и должна быть persistent, чтобы пользователь мог вызвать меню когда угодно.
 """
 from telethon import events, Button
-from bot.menu_system import build_menu
+from bot.menu_system import build_menu, _is_admin_user
 from bot.require_diary_user import require_diary_user
 
 # tlgbot и logger внедряются динамически загрузчиком
@@ -30,7 +30,7 @@ async def _show_menu(event):
         ready_text = t('start_ready', lang=lang)
     else:
         ready_text = 'Меню'
-    buttons = build_menu(lang)
+    buttons = build_menu(lang, is_admin=_is_admin_user(getattr(event, 'sender_id', 0)))
     await event.respond(ready_text, buttons=buttons)
     # Дублируем reply-кнопку меню (если пользователь очистил клавиатуру)
     try:

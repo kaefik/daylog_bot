@@ -3,7 +3,7 @@
 """
 
 from telethon import events, Button
-from bot.menu_system import build_menu, bootstrap_default_entries, send_main_menu, init_menu_system
+from bot.menu_system import build_menu, send_main_menu, init_menu_system
 import pytz
 
 
@@ -71,7 +71,7 @@ async def start_cmd_plugin(event):
     
     # Инициализация системы меню (гарантирует прикрепление callback роутера)
     init_menu_system(tlgbot, logger)
-    bootstrap_default_entries()
+    # bootstrap_default_entries() больше не нужен: пункты регистрируются внутри самих плагинов
 
     # Приветственное сообщение для всех пользователей
     welcome_message = tlgbot.i18n.t('start_welcome', lang=lang) if hasattr(tlgbot, 'i18n') else "Привет! жми на команды и получай информацию!"

@@ -27,10 +27,37 @@ class MenuEntry:
     handler: str
     order: int = 100
     enabled: bool = True
+    admin_only: bool = False
 
 
 MENU_REGISTRY: List[MenuEntry] = []
 MENU_CACHE: Dict[str, List[List[Button]]] = {}
+
+
+def _is_admin_user(user_id) -> bool:
+    """Безопасная проверка: user_id может быть str/int, tlgbot.admins может содержать int.
+
+    Приводим всё к int и проверяем принадлежность. Ошибки глушим.
+    """
+    try:
+        admins = getattr(tlgbot, 'admins', None)
+        if admins is None:
+            if logger:
+                logger.debug("menu_system: no tlgbot.admins attribute yet")
+            return False
+        uid = int(user_id)
+        admin_set = {int(a) for a in admins}
+        result = uid in admin_set
+        if logger:
+            logger.debug(f"menu_system: _is_admin_user uid={uid} admins={list(admin_set)} -> {result}")
+        return result
+    except Exception as e:  # noqa: BLE001
+        if logger:
+            logger.debug(f"menu_system: _is_admin_user error for user_id={user_id}: {e}")
+        return False
+
+# При обновлении версии с поддержкой admin_only логично сбросить кэш (одноразово при импорте)
+MENU_CACHE.clear()
 
 
 def register_menu(entry: dict | MenuEntry) -> None:
@@ -56,10 +83,13 @@ def invalidate_menu(lang: Optional[str] = None) -> None:
         logger.debug(f"menu_system: invalidate {'all' if lang is None else lang}")
 
 
-def build_menu(lang: str) -> List[List[Button]]:
-    """Строит (и кэширует) inline-меню по языку."""
-    if lang in MENU_CACHE:
-        return MENU_CACHE[lang]
+def build_menu(lang: str, is_admin: bool = False) -> List[List[Button]]:
+    """Строит (и кэширует) inline-меню по языку и роли."""
+    cache_key = f"{lang}|admin" if is_admin else lang
+    if cache_key in MENU_CACHE:
+        if logger:
+            logger.debug(f"menu_system: cache hit key={cache_key}")
+        return MENU_CACHE[cache_key]
     if hasattr(tlgbot, 'i18n'):
         t = tlgbot.i18n.t  # type: ignore[attr-defined]
     else:
@@ -67,8 +97,12 @@ def build_menu(lang: str) -> List[List[Button]]:
 
     rows: List[List[Button]] = []
     current: List[Button] = []
+    if logger:
+        logger.debug(f"menu_system: building menu for lang={lang} is_admin={is_admin}")
     for entry in sorted(MENU_REGISTRY, key=lambda e: e.order):
         if not getattr(entry, 'enabled', True):
+            continue
+        if getattr(entry, 'admin_only', False) and not is_admin:
             continue
         label = t(entry.tr_key, lang=lang) or entry.tr_key
         current.append(Button.inline(label, data=f"menu:{entry.key}"))
@@ -77,7 +111,7 @@ def build_menu(lang: str) -> List[List[Button]]:
             current = []
     if current:
         rows.append(current)
-    MENU_CACHE[lang] = rows
+    MENU_CACHE[cache_key] = rows
     return rows
 
 
@@ -161,31 +195,30 @@ def enable_menu(key: str):
         logger.debug(f"menu_system: enabled {key}")
 
 
-def bootstrap_default_entries():
-    """Подключается из start_cmd при первом /start (одноразово если пусто)."""
-    # Убедимся что роутер зарегистрирован
-    ensure_menu_router()
-    if MENU_REGISTRY:
-        return
-    # Базовые пункты — можно позже перенести в сами плагины
-    register_menu({
-        'key': 'today', 'tr_key': 'menu_today', 'plugin': 'today', 'handler': 'today_handler', 'order': 10
-    })
-    register_menu({
-        'key': 'yesterday', 'tr_key': 'menu_yesterday', 'plugin': 'yesterday', 'handler': 'yesterday_handler', 'order': 20
-    })
-    register_menu({
-        'key': 'view', 'tr_key': 'menu_view', 'plugin': 'view', 'handler': 'view_command_handler', 'order': 30
-    })
-    register_menu({
-        'key': 'export', 'tr_key': 'menu_export', 'plugin': 'export', 'handler': 'export_command_handler', 'order': 40
-    })
+def _ensure_admin_entries():
+    """Регистрирует admin-only пункты если их ещё нет. Идempotent."""
+    before = len(MENU_REGISTRY)
+    admin_entries: list[dict] = []  # перенесены в _core.py
+    for e in admin_entries:
+        if not any(x.key == e['key'] for x in MENU_REGISTRY):
+            register_menu(e)
+    if len(MENU_REGISTRY) != before:
+        MENU_CACHE.clear()
+        if logger:
+            logger.debug("menu_system: admin entries ensured & cache cleared")
 
-    if logger:
-        logger.debug("menu_system: default entries bootstrapped")
+
+def bootstrap_default_entries():  # noqa: D401
+    """(Deprecated) Ранее инициализировал пункты. Теперь регистрация в плагинах."""
+    ensure_menu_router()
+    _ensure_admin_entries()
 
 
 # Функция-помощник для старта меню после выбора часового пояса
 def send_main_menu(event, lang: str, start_ready_text: str):
-    buttons = build_menu(lang)
+    user_id = getattr(event, 'sender_id', 0)
+    is_admin = _is_admin_user(user_id)
+    if logger:
+        logger.debug(f"menu_system: send_main_menu user_id={user_id} is_admin={is_admin}")
+    buttons = build_menu(lang, is_admin=is_admin)
     return event.respond(start_ready_text, buttons=buttons)

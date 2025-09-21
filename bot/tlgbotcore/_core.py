@@ -10,6 +10,14 @@ import traceback
 import logging
 from typing import Any
 from telethon import events, Button
+try:
+    from bot.menu_system import register_menu
+    # Регистрация admin-only пунктов меню (идемпотентно)
+    register_menu({'key': 'listusers', 'tr_key': 'menu_listusers', 'plugin': '_core', 'handler': 'info_user_admin', 'order': 900, 'admin_only': True})
+    register_menu({'key': 'adduser', 'tr_key': 'menu_adduser', 'plugin': '_core', 'handler': 'add_user_admin', 'order': 910, 'admin_only': True})
+    register_menu({'key': 'deluser', 'tr_key': 'menu_deluser', 'plugin': '_core', 'handler': 'del_user_admin', 'order': 920, 'admin_only': True})
+except Exception:
+    pass
 
 from cfg import config_tlg  # Добавьте импорт конфига для доступа к DEFAULT_LANG
 from cfg.config_tlg import TYPE_DB

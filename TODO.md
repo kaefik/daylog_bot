@@ -2,6 +2,24 @@
 
 ## Журнал
 
+### 2025-09-21
+- [feat] Поддержка админских пунктов главного меню
+  - Добавлено поле `admin_only` в `MenuEntry`, фильтрация и кэш по ключу `lang|admin`
+  - Отдельный helper `_is_admin_user` с нормализацией типов и детальным логированием
+- [feat] Админские кнопки `/listusers` `/adduser` `/deluser`
+  - Регистрация в плагине `_core` как inline-меню (доступны только администраторам)
+  - Добавлены ключи локализации `menu_listusers`, `menu_adduser`, `menu_deluser` во все локали
+- [refactor] Децентрализация регистрации меню
+  - Регистрация пунктов перенесена в соответствующие плагины (today / yesterday / view / export / _core)
+  - `bootstrap_default_entries` помечен как устаревший (noop) и удалён из `/start`
+- [test] Добавлен `tests/test_admin_menu.py`
+  - Проверка видимости админских пунктов для admin vs non-admin
+  - Тест нормализации `_is_admin_user` (смешанные типы идентификаторов)
+- [fix] Исправлены падающие импорты `csvdb` / `csvdbutils` в тестах
+  - Добавлены shim-модули + `sitecustomize.py` и `conftest.py` для корректного `sys.path`
+  - Все тесты проходят: 49 passed
+- [docs] Обновлён `docs/menu_system_howto.md` разделами про `admin_only`, кэш по роли, тестирование и FAQ по админским кнопкам
+
 ### 2025-09-20
 - [improve] Инвалидация кэша главного меню при смене языка (/setlang)
   - В setlang_callback_handler вызывается invalidate_menu(new_lang)
