@@ -193,6 +193,14 @@ def ensure_menu_router():
         except Exception:
             return
         await event.answer()
+        # Удаляем сообщение с меню, чтобы не замусоривать диалог
+        try:
+            await event.delete()
+            if logger:
+                logger.debug(f"menu_system: deleted menu message after button click for key={key}")
+        except Exception as e:
+            if logger:
+                logger.error(f"menu_system: error deleting menu message: {e}")
         await dispatch_command(key, event)
 
     # Обновляем глобальные ссылки
