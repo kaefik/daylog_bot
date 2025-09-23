@@ -399,6 +399,13 @@ async def view_period_handler(event):
         # Отвечаем на коллбэк, чтобы убрать индикатор загрузки с кнопки
         await event.answer()
         
+        # Удаляем сообщение с меню выбора периода, чтобы не замусоривать диалог
+        try:
+            await event.delete()
+            logger.debug(f"view.py: deleted period selection menu message for period={period}")
+        except Exception as e:
+            logger.error(f"view.py: error deleting period selection menu message: {e}")
+        
         if period == 'today':
             # Показываем запись за сегодня
             today = date.today()
