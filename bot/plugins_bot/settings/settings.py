@@ -52,6 +52,9 @@ async def settings_root(event):
                 Button.inline(tlgbot.i18n.t('settings_reminder_set_time', lang=lang), data=b'rem:set'),
                 Button.inline(tlgbot.i18n.t('settings_change_language', lang=lang), data=b'setlang:open'),
             ],
+            [
+                Button.inline(tlgbot.i18n.t('cancel', lang=lang), data=b'settings:cancel'),
+            ],
         ]
     )
 
@@ -70,6 +73,9 @@ async def show_time_menu(event):
     rows.append([
         Button.inline(tlgbot.i18n.t('settings_reminder_custom', lang=lang), data=b'rem:custom'),
         Button.inline(tlgbot.i18n.t('settings_reminder_disable', lang=lang), data=b'rem:disable'),
+    ])
+    rows.append([
+        Button.inline(tlgbot.i18n.t('cancel', lang=lang), data=b'settings:cancel'),
     ])
     await event.edit(tlgbot.i18n.t('settings_reminder_choose', lang=lang), buttons=rows)
 
@@ -110,6 +116,9 @@ async def settings_open_setlang(event):
         [Button.inline(name, data=f"setlang_{code}".encode())]
         for code, name in _cfg.AVAILABLE_LANGS.items()
     ]
+    # Добавляем кнопку Отмена
+    buttons.append([Button.inline(tlgbot.i18n.t('cancel', lang=getattr(user, 'lang', 'ru')), data=b'settings:cancel')])
+    
     await event.edit(
         tlgbot.i18n.t('choose_lang', lang=getattr(user, 'lang', 'ru')),
         buttons=buttons
@@ -129,3 +138,21 @@ async def catch_custom_time(event):
     db.update_user_settings(user_id, reminder_time=text, reminder_enabled=1)
     schedule_user_reminder(tlgbot, db, user_id, text)
     await event.respond(tlgbot.i18n.t('settings_reminder_saved', lang=lang, time=text))
+
+@tlgbot.on(events.CallbackQuery(pattern=b'settings:cancel'))
+async def settings_cancel(event):
+    """Обработчик кнопки Отмена в меню настроек."""
+    user_id = event.sender_id
+    lang = _resolve_lang(user_id)
+    
+    # Сначала ответим на callback, чтобы убрать индикатор загрузки
+    await event.answer()
+    
+    # Удаляем сообщение с меню настроек
+    try:
+        await event.delete()
+        if logger:
+            logger.debug(f"settings.py: удалено меню настроек при нажатии на кнопку Отмена")
+    except Exception as e:
+        if logger:
+            logger.error(f"settings.py: ошибка при удалении меню настроек: {e}")
