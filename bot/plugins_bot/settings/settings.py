@@ -5,6 +5,15 @@ from bot.reminders.manager import schedule_user_reminder, disable_user_reminder,
 from datetime import date
 import re
 
+# Регистрация в меню
+try:
+    from bot.menu_system import register_menu
+    register_menu({
+        'key': 'settings', 'tr_key': 'menu_settings', 'plugin': 'settings', 'handler': 'settings_root', 'order': 40
+    })
+except Exception as e:
+    pass
+
 # Глобали внедряются при загрузке плагина
 tlgbot = globals().get('tlgbot')
 logger = globals().get('logger')
